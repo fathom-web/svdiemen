@@ -29,6 +29,9 @@ let s;try{s=JSON.parse(localStorage.getItem(KEY))||initial()}catch{s=initial()}
 if(!s.posVersion){const convert={LCM:'LDM',CM:'CAM',RCM:'RDM',CB:'RCB'};s.players.forEach(p=>{p.primary=convert[p.primary]||p.primary;p.secondary=convert[p.secondary]||p.secondary});s.posVersion=2;/* Old generated lineups use incompatible positions; regenerate when needed. */s.generated=null;localStorage.setItem(KEY,JSON.stringify(s))}
 if(!s.teamVersion){if(s.players.length===16&&s.players.every((p,i)=>p.name==='Speler '+(i+1))){s.players=makeTeam();s.generated=null;}else{s.players.forEach(p=>{p.preferences=p.preferences||[p.primary,p.secondary].filter(Boolean);});}s.teamVersion=2;localStorage.setItem(KEY,JSON.stringify(s));}
 if(!Array.isArray(s.fixtures)){s.fixtures=FIXTURES.map(f=>({...f,meeting:'',field:''}));localStorage.setItem(KEY,JSON.stringify(s));}
+const OFFICIAL_REFEREES='Mika, Rivano, Danly, Rob/Melcher, Shashi';
+const OFFICIAL_LINESMEN='Aarav, Meron, Samuel, Jeffrey, Kaua, Yusuf, Noah';
+if(!s.officialsVersion){s.match.refereeList=OFFICIAL_REFEREES;s.match.linesmanList=OFFICIAL_LINESMEN;s.match.refereeIndex=0;s.match.linesmanIndex=0;s.officialsVersion=1;s.generated=null;localStorage.setItem(KEY,JSON.stringify(s));}
 const save=()=>localStorage.setItem(KEY,JSON.stringify(s));
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const byId=id=>s.players.find(p=>p.id===id);
