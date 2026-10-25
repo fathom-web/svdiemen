@@ -28,7 +28,10 @@
     if(!src)return Promise.resolve(null);
     if(cache.has(src))return cache.get(src);
     const promise=new Promise(resolve=>{
-      const img=new Image();img.crossOrigin='anonymous';img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=src;
+      const img=new Image();img.crossOrigin='anonymous';let done=false;
+      const finish=value=>{if(done)return;done=true;clearTimeout(timeout);resolve(value)};
+      const timeout=setTimeout(()=>finish(null),5500);
+      img.onload=()=>finish(img);img.onerror=()=>finish(null);img.src=src;
     });
     cache.set(src,promise);return promise;
   }
