@@ -99,7 +99,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div class="match-actions"><button class="btn iconbtn" onclick="generate()"><svg class="ico"><use href="#ic-ball"/></svg>Genereer opstelling & wissels</button><button class="btn secondary" onclick="resetGenerated()">Opnieuw berekenen</button></div><p id="generatedMeta" class="caption"></p></section>
 <div class="two-col">
 <section class="module"><div class="row-title"><h2>Basiself • 4-3-3</h2><span class="count-pill">2 CONTROLEREND + 10</span></div><p class="pitch-hint">Tactiek: vier verdedigers, twee middenvelders achter de 10 en drie aanvallers.</p><div class="pitch" id="pitch"></div><h2 class="section-title" style="margin-top:20px">Wisselbank</h2><div id="bench"></div></section>
-<section class="module"><div class="row-title"><h2>Wisseltijdlijn</h2><span class="count-pill">20' · 40' · 60'</span></div><div class="timeline" id="subs"></div><h2 class="section-title" style="margin-top:24px">Officials</h2><div id="officials"></div><div class="actions"><button class="btn secondary" onclick="finishMatch()">Wedstrijd afronden & minuten vastleggen</button></div><p class="caption">Speelminuten tellen pas mee wanneer je de wedstrijd afrondt.</p></section>
+<section class="module"><div class="row-title"><h2>Wisseltijdlijn</h2><span class="count-pill">17:30 · RUST · 57:30</span></div><div class="timeline" id="subs"></div><h2 class="section-title" style="margin-top:24px">Officials</h2><div id="officials"></div><div class="actions"><button class="btn secondary" onclick="finishMatch()">Wedstrijd afronden & minuten vastleggen</button></div><p class="caption">Speelminuten tellen pas mee wanneer je de wedstrijd afrondt.</p></section>
 </div>
 <section class="module" style="margin-top:17px"><div class="row-title"><h2>Wedstrijdbericht voor ouders</h2><span class="count-pill">WHATSAPP</span></div><div id="message" class="whatsapp"></div><div class="actions"><button class="btn" onclick="copyMessage()">Kopieer wedstrijdbericht</button></div></section>
 </section>
@@ -252,30 +252,61 @@ const originalRenderMatchForm=renderMatchForm;
 renderMatchForm=function(){originalRenderMatchForm();renderMatchSummary()};
 const originalSaveMatch=saveMatch;
 saveMatch=function(){originalSaveMatch();renderMatchSummary();renderOverview()};
+// JO16: 2 x 40 minuten. Iedereen op de bank komt erin op 17:30, rust en 57:30.
+// Speelblokken: 17.5 + 22.5 + 17.5 + 22.5 = 80 minuten.
+const MATCH_PERIODS=[17.5,22.5,17.5,22.5];
+const SUBSTITUTION_TIMES=[{time:17.5,label:'17:30',description:'Eerste wissel'},{time:40,label:'RUST',description:'Rust (40:00)'},{time:57.5,label:'57:30',description:'Tweede helft + 17:30'}];
 function regenerateSubsFromLineup(g){
- const available=s.players.filter(p=>!p.injured),keeper=g.lineup.GK,current={...g.lineup};
- const minutes=Object.fromEntries(available.map(p=>[p.id,0])),subs=[];
- for(let stage=1;stage<=4;stage++){
-   Object.values(current).forEach(id=>{minutes[id]=(minutes[id]||0)+20});
-   if(stage===4)break;
-   const swaps=[],limit=Math.min(stage===2?4:3,available.length-11);
-   for(let t=0;t<limit;t++){
-     let best=null;
-     const onField=new Set(Object.values(current));
-     const bank=available.filter(p=>!onField.has(p.id)&&p.id!==keeper&&!swaps.some(c=>c.in===p.id));
-     for(const inPlayer of bank){
-       for(const pos of POS.filter(x=>x!=='GK')){
-         const out=byId(current[pos]);if(!out)continue;
-         const fit=suitability(inPlayer,pos);if(fit<=0)continue;
-         const score=(minutes[out.id]-minutes[inPlayer.id])*2+fit*.7-training(out)*4+training(inPlayer)*5;
-         if(!best||score>best.score)best={pos,out:out.id,in:inPlayer.id,score};
-       }
+ const available=s.players.filter(p=>!p.injured);
+ const keeper=g.lineup.GK;
+ const positions=POS.filter(pos=>pos!=='GK');
+ const current={...g.lineup};
+ const minutes=Object.fromEntries(available.map(p=>[p.id,0]));
+ const swaps=[],warnings=[];
+ const getCurrentIds=()=>new Set(Object.values(current));
+ for(let stage=0;stage<MATCH_PERIODS.length;stage++){
+   for(const id of Object.values(current))minutes[id]=(minutes[id]||0)+MATCH_PERIODS[stage];
+   if(stage===MATCH_PERIODS.length-1)break;
+   const bench=available.filter(p=>p.id!==keeper&&!getCurrentIds().has(p.id));
+   const benchToBring=bench.slice(0,positions.length);
+   if(bench.length>benchToBring.length)warnings.push('Er zijn meer dan 10 reserves: niet iedereen kan tegelijk het veld in.');
+   const changes=[];
+   // Zoek een optimale één-op-één toewijzing van alle reserves naar veldposities.
+   // Hiermee krijgt elke reserve een plek, terwijl positievoorkeuren en eerlijke minuten meetellen.
+   const memo=new Map();
+   function assign(index,mask){
+     if(index===benchToBring.length)return {score:0,choice:[]};
+     const key=index+':'+mask;if(memo.has(key))return memo.get(key);
+     const player=benchToBring[index];
+     let best={score:-Infinity,choice:[]};
+     for(let j=0;j<positions.length;j++){
+       if(mask&(1<<j))continue;
+       const pos=positions[j],incumbent=byId(current[pos]);if(!incumbent)continue;
+       const match=suitability(player,pos);
+       const fairness=((minutes[incumbent.id]||0)-(minutes[player.id]||0))*3;
+       const season=((incumbent.minutes||0)-(player.minutes||0))*.035;
+       const attendance=(training(player)-training(incumbent))*3;
+       const fitting=match*1.65;
+       // Een vaste spits zonder geschikte vervanger blijft zo mogelijk op het veld.
+       const protect=(suitability(incumbent,pos)>=100&&match<=0)?-200:0;
+       const result=assign(index+1,mask|(1<<j));
+       const score=fitting+fairness+season+attendance+protect+result.score;
+       if(score>best.score)best={score,choice:[{pos,out:incumbent.id,in:player.id,fit:match},...result.choice]};
      }
-     if(!best)break;current[best.pos]=best.in;swaps.push(best);
+     memo.set(key,best);return best;
    }
-   subs.push({time:stage*20,changes:swaps});
+   const plan=assign(0,0).choice;
+   for(const c of plan){
+     current[c.pos]=c.in;
+     changes.push({pos:c.pos,out:c.out,in:c.in});
+     if(c.fit<=0)warnings.push(byId(c.in)?.name+' heeft geen opgegeven voorkeur voor positie '+(positionNumber[c.pos]||c.pos)+'. Controleer deze wissel.');
+   }
+   swaps.push({...SUBSTITUTION_TIMES[stage],changes});
  }
- g.minutes=minutes;g.swaps=subs;
+ g.minutes=minutes;
+ g.swaps=swaps;
+ g.warnings=[...new Set(warnings)];
+ g.duration=80;
 }
 generate=function(){
  saveMatch();if(!s.match.date||!s.match.opponent)return showToast('Selecteer eerst een wedstrijd');
@@ -296,7 +327,7 @@ generate=function(){
  }
  const names=s.match.linesmanList.split(',').map(x=>x.trim()).filter(Boolean),refs=s.match.refereeList.split(',').map(x=>x.trim()).filter(Boolean);
  const g={date:s.match.date,opponent:s.match.opponent,lineup,swaps:[],minutes:{},linesman:names.length?names[(s.match.linesmanIndex||0)%names.length]:'Nog toewijzen',referee:s.match.home==='home'?(refs.length?refs[(s.match.refereeIndex||0)%refs.length]:'Nog toewijzen'):'Gastvereniging',created:new Date().toISOString()};
- regenerateSubsFromLineup(g);s.generated=g;save();renderGenerated();renderStats();showToast('Opstelling en wisselschema berekend');
+ regenerateSubsFromLineup(g);s.generated=g;save();renderGenerated();renderStats();showToast('Alle wisselspelers ingepland op 17:30, rust en 57:30');
 };
 function swapLineup(from,to){
  if(from===to)return;const g=s.generated;if(!g)return;
@@ -313,11 +344,11 @@ function lineupDrop(event,pos){event.preventDefault();const from=draggedPitch||e
 renderGenerated=function(){
  const g=s.generated,el=document.getElementById('pitch');
  if(!g){el.innerHTML='<div class="empty" style="z-index:2">Maak eerst de opstelling.</div>';document.getElementById('bench').innerHTML='<div class="empty">Nog niet geselecteerd</div>';document.getElementById('subs').innerHTML='<div class="empty">Geen wissels berekend.</div>';document.getElementById('officials').textContent='Nog niet toegewezen';document.getElementById('message').textContent='Genereer de opstelling om het wedstrijdbericht te maken.';document.getElementById('generatedMeta').textContent='';return}
- document.getElementById('generatedMeta').textContent='Gegenereerd '+new Date(g.created).toLocaleString('nl-NL')+'. Klik of sleep twee posities op het veld om de basisspelers te verwisselen.';
+ document.getElementById('generatedMeta').textContent='Gegenereerd '+new Date(g.created).toLocaleString('nl-NL')+' · 80 minuten · alle reserves erin op 17:30, rust en 57:30. Klik of sleep twee posities om de basisspelers te verwisselen.'+(g.warnings?.length?' ⚠ '+g.warnings.join(' '):'');
  el.innerHTML=LINES.map(line=>'<div class="line">'+line.map(pos=>{const p=byId(g.lineup[pos]);return '<button class="pitch-player" draggable="'+(pos!=='GK')+'" ondragstart="lineupDrag(event,\''+pos+'\')" ondragover="event.preventDefault()" ondrop="lineupDrop(event,\''+pos+'\')" onclick="selectLineupPosition(\''+pos+'\')" title="Selecteer positie '+pos+'"><div class="shirt">'+esc(p?.number||positionNumber[pos])+'</div><span class="player-label">'+esc(p?.name||'?')+'</span><span class="position-label">'+(positionText[pos]||pos)+'</span></button>'}).join('')+'</div>').join('');
  const subs=s.players.filter(p=>!p.injured&&!Object.values(g.lineup).includes(p.id));
  document.getElementById('bench').innerHTML='<div class="bench-tags">'+(subs.map(p=>'<span>'+esc(p.number?('#'+p.number+' '):'')+esc(p.name)+'</span>').join('')||'<span>Geen reserves</span>')+'</div>';
- document.getElementById('subs').innerHTML=(g.swaps||[]).map(sw=>'<div class="time-event"><div class="time-node">'+sw.time+'’</div><div class="time-content">'+(sw.changes.length?sw.changes.map(c=>'<div class="swap"><span class="out">UIT '+esc(byId(c.out)?.name||'?')+'</span><span class="swap-arrow">→</span><span class="in">IN '+esc(byId(c.in)?.name||'?')+'</span><span class="pos-tag">'+esc(positionText[c.pos]||c.pos)+'</span></div>').join(''):'<div class="muted">Geen passende wissel beschikbaar</div>')+'</div></div>').join('');
+ document.getElementById('subs').innerHTML=(g.swaps||[]).map(sw=>'<div class="time-event"><div class="time-node">'+esc(sw.label||sw.time+'’')+'</div><div class="time-content">'+(sw.changes.length?sw.changes.map(c=>'<div class="swap"><span class="out">UIT '+esc(byId(c.out)?.name||'?')+'</span><span class="swap-arrow">→</span><span class="in">IN '+esc(byId(c.in)?.name||'?')+'</span><span class="pos-tag">'+esc(positionText[c.pos]||c.pos)+'</span></div>').join(''):'<div class="muted">Geen passende wissel beschikbaar</div>')+'</div></div>').join('');
  document.getElementById('officials').innerHTML='<div class="officer-card"><span>Grensrechter</span><strong>'+esc(g.linesman)+'</strong></div><div class="officer-card"><span>Scheidsrechter</span><strong>'+esc(g.referee)+'</strong></div>';
  document.getElementById('message').textContent=makeMessage();
 };
