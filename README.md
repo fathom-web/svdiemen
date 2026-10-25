@@ -6,7 +6,7 @@ Een mobiele webapp voor het beheren van spelers, trainingsaanwezigheid, blessure
 - Spelers en primaire/secundaire posities beheren
 - Aanwezigheid op dinsdag en donderdag registreren
 - Blessures uitsluiten
-- Automatische 4-3-3-opstelling en drie volledige wisselrondes (17:30, rust na 40:00, en 57:30; alle reserves erin)
+- Automatische 4-3-3-opstelling en drie volledige wisselrondes (20 minuten eerste helft, rust na 40 minuten, en 20 minuten tweede helft; alle reserves erin)
 - Trainingsopkomst en eerdere speelminuten meewegen
 - Vaste keeper
 - Grensrechter- en scheidsrechterrotatie
