@@ -421,12 +421,12 @@ function copyMapsLink(){
  if(!url)return showToast('Voer eerst een sportpark of locatie in');
  navigator.clipboard?.writeText(url).then(()=>showToast('Google Maps-link gekopieerd')).catch(()=>window.open(url,'_blank','noopener,noreferrer'));
 }
-async function posterBlob(){return new Promise(async(resolve,reject)=>{
- const c=document.getElementById('parentPoster');if(!c)return reject(Error('Geen poster'));
+async function posterBlob(){
+ const c=document.getElementById('parentPoster');if(!c)throw Error('Geen poster');
  await refreshCrests();
  JO163Parent.drawPoster(c,s,parentWeatherKey===parentKey()?parentWeather:null,parentLogos);
- c.toBlob(blob=>blob?resolve(blob):reject(Error('Geen afbeelding')),'image/png');
-})}
+ return new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(Error('Geen afbeelding')),'image/png'));
+}
 function downloadBlob(blob){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download='JO16-3-matchday-'+(s.match.date||'wedstrijd')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
 async function downloadPoster(){if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');try{downloadBlob(await posterBlob());showToast('Wedstrijdposter gedownload')}catch(e){showToast('PNG maken mislukt')}}
 async function copyPoster(){
