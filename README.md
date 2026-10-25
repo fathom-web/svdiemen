@@ -6,7 +6,7 @@ Een mobiele webapp voor het beheren van spelers, trainingsaanwezigheid, blessure
 - Spelers en primaire/secundaire posities beheren
 - Aanwezigheid op dinsdag en donderdag registreren
 - Blessures uitsluiten
-- Automatische 4-3-3-opstelling en drie wisselmomenten (20/40/60 minuten)
+- Automatische 4-3-3-opstelling en drie volledige wisselrondes (17:30, rust na 40:00, en 57:30; alle reserves erin)
 - Trainingsopkomst en eerdere speelminuten meewegen
 - Vaste keeper
 - Grensrechter- en scheidsrechterrotatie
@@ -18,7 +18,7 @@ Een mobiele webapp voor het beheren van spelers, trainingsaanwezigheid, blessure
 Open `index.html` in een browser, of activeer **Settings → Pages → Build and deployment → Deploy from a branch → main / (root)** in GitHub om de website online te zetten.
 
 ## Belangrijk: huidige beperkingen
-Deze eerste versie is een **prototype**. Gegevens worden via `localStorage` lokaal op één apparaat opgeslagen. Traineraccounts, gedeelde database, automatische vrijdagdeadline, serverplanning, automatische verzending naar ouders en wisselcorrecties tijdens de wedstrijd bestaan nog **niet**. Een opstelling moet nu handmatig worden gegenereerd en gecontroleerd. De wisselplanning gebruikt een heuristiek en garandeert geen strikt gelijke speeltijd of maximaal passende posities. Blessureveranderingen of wijzigingen na genereren vereisen opnieuw genereren.
+Deze eerste versie is een **prototype**. Gegevens worden via `localStorage` lokaal op één apparaat opgeslagen. Traineraccounts, gedeelde database, automatische vrijdagdeadline, serverplanning, automatische verzending naar ouders en wisselcorrecties tijdens de wedstrijd bestaan nog **niet**. Een opstelling moet nu handmatig worden gegenereerd en gecontroleerd. De wisselplanning wisselt per ronde alle beschikbare veldreserves in. Positievoorkeur en speelminuten worden meegewogen, maar optimale verdeling of positiebezetting kan niet altijd gegarandeerd worden. Blessureveranderingen of wijzigingen na genereren vereisen opnieuw genereren.
 
 Voer geen gevoelige gegevens van jeugdspelers in op gedeelde apparaten. Gebruik geen persoonsgegevens van ouders totdat toegangsbeveiliging is toegevoegd.
 
