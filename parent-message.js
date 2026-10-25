@@ -101,40 +101,78 @@
     ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();
     if(stroke){ctx.lineWidth=2;ctx.strokeStyle=stroke;ctx.stroke();}
   }
-  function drawPoster(canvas,state,weather){
-    const m=matchInfo(state),ctx=canvas.getContext("2d"),w=1080,h=1350;
-    canvas.width=w;canvas.height=h;
-    let bg=ctx.createLinearGradient(0,0,960,1350);bg.addColorStop(0,"#09275a");bg.addColorStop(.52,PALETTE.navy);bg.addColorStop(1,"#081b3f");
-    ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle="#74b6ff20";ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(950,120,350,0,Math.PI*2);ctx.stroke();
-    ctx.beginPath();ctx.arc(950,120,280,0,Math.PI*2);ctx.stroke();
-    ctx.beginPath();ctx.arc(950,120,215,0,Math.PI*2);ctx.stroke();
-    rounded(ctx,65,70,950,120,30,"#ffffff0b","#ffffff32");
-    ctx.fillStyle=PALETTE.white;ctx.font="900 39px system-ui, sans-serif";ctx.fillText("SV DIEMEN",100,125);
-    ctx.fillStyle="#92bdff";ctx.font="750 23px system-ui, sans-serif";ctx.fillText("JO16-3  ·  TEAM MANAGER",102,158);
-    rounded(ctx,65,225,950,680,38,"#104187","#4e95eb");
-    ctx.textAlign="center";ctx.fillStyle="#b6d5ff";ctx.font="800 30px system-ui,sans-serif";
-    ctx.fillText(m.home==="home"?"THUISWEDSTRIJD":"UITWEDSTRIJD",540,300);
-    ctx.fillStyle="#ffffff";ctx.font="900 82px system-ui,sans-serif";ctx.fillText("MATCHDAY",540,408);
-    ctx.fillStyle="#87baff";ctx.font="700 30px system-ui,sans-serif";ctx.fillText("ZATERDAG VOETBAL",540,458);
-    const teams=m.home==="home"?["SV DIEMEN",String(m.opponent||"TEGENSTANDER")]:[String(m.opponent||"TEGENSTANDER"),"SV DIEMEN"];
-    let y=568;for(let i=0;i<teams.length;i++){ctx.fillStyle="#ffffff";ctx.font="850 44px system-ui,sans-serif";
-      const words=wrap(ctx,teams[i].toUpperCase(),815);for(const line of words.slice(0,2)){ctx.fillText(line,540,y);y+=56}
-      if(i===0){ctx.fillStyle="#97ccff";ctx.font="700 29px system-ui,sans-serif";ctx.fillText("VS",540,y+2);y+=68}
+  function drawPoster(canvas,state,weather,logos=[]){
+    const m=matchInfo(state),ctx=canvas.getContext("2d"),W=1080,H=1350;
+    canvas.width=W;canvas.height=H;
+    const bg=ctx.createLinearGradient(0,0,1080,1350);
+    bg.addColorStop(0,"#0c3269");bg.addColorStop(.45,"#071936");bg.addColorStop(1,"#061329");
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle="#6ab5ff1b";ctx.lineWidth=3;
+    [250,340,430].forEach(radius=>{ctx.beginPath();ctx.arc(960,160,radius,0,Math.PI*2);ctx.stroke()});
+    rounded(ctx,56,49,968,114,28,"#ffffff0d","#679de444");
+    ctx.fillStyle="#ffffff";ctx.font="900 40px system-ui,sans-serif";ctx.fillText("SV DIEMEN",92,102);
+    ctx.fillStyle="#a3caff";ctx.font="750 23px system-ui,sans-serif";ctx.fillText("JO16-3  /  TEAM MANAGER",94,136);
+    ctx.textAlign="center";
+    rounded(ctx,56,186,968,460,32,"#15509b","#4381d5");
+    ctx.fillStyle="#bbddff";ctx.font="750 26px system-ui,sans-serif";
+    ctx.fillText(m.home==="home"?"THUISWEDSTRIJD":"UITWEDSTRIJD",540,230);
+    ctx.fillStyle="#ffffff";ctx.font="1000 70px system-ui,sans-serif";ctx.fillText("MATCHDAY",540,317);
+    const teams=m.home==="home"?["SV DIEMEN JO16-3",m.opponent||"TEGENSTANDER"]:[m.opponent||"TEGENSTANDER","SV DIEMEN JO16-3"];
+    function badge(cx,cy,logo,name){
+      ctx.fillStyle="#ffffff";ctx.beginPath();ctx.arc(cx,cy,95,0,Math.PI*2);ctx.fill();
+      ctx.save();ctx.beginPath();ctx.arc(cx,cy,87,0,Math.PI*2);ctx.clip();
+      if(logo&&logo.naturalWidth&&logo.naturalHeight){
+        const scale=Math.min(162/logo.naturalWidth,162/logo.naturalHeight);
+        const iw=logo.naturalWidth*scale,ih=logo.naturalHeight*scale;
+        ctx.drawImage(logo,cx-iw/2,cy-ih/2,iw,ih);
+      }else{
+        ctx.fillStyle="#1261c8";ctx.fillRect(cx-88,cy-88,176,176);
+        ctx.fillStyle="#ffffff";ctx.font="900 41px system-ui,sans-serif";
+        const abbr=(typeof JO163Logos!=='undefined')?JO163Logos.initials(name):String(name).slice(0,3).toUpperCase();
+        ctx.fillText(abbr,cx,cy+14);
+      }
+      ctx.restore();
     }
-    ctx.fillStyle="#c4e2ff";ctx.font="700 29px system-ui,sans-serif";ctx.fillText(formatDate(m.date),540,825);
-    const cards=[["AFTRAP",m.kickoff||"--:--"],["VERZAMELEN",m.meeting||"--:--"]];
-    cards.forEach((c,i)=>{const x=65+i*485;rounded(ctx,x,930,465,165,24,"#133567","#4677ab");
-      ctx.fillStyle="#9bc6f9";ctx.font="700 24px system-ui,sans-serif";ctx.textAlign="center";ctx.fillText(c[0],x+232,980);
-      ctx.fillStyle=PALETTE.white;ctx.font="900 64px system-ui,sans-serif";ctx.fillText(c[1],x+232,1055)});
-    rounded(ctx,65,1120,950,150,22,"#0e2b58","#366898");
-    ctx.fillStyle="#afd1fb";ctx.font="750 23px system-ui,sans-serif";ctx.fillText("LOCATIE",540,1162);
-    ctx.fillStyle="#ffffff";ctx.font="800 35px system-ui,sans-serif";
-    let locationLines=wrap(ctx,m.venue||"Locatie volgt",870);
-    locationLines.slice(0,2).forEach((ln,i)=>ctx.fillText(ln,540,1210+i*40));
-    if(weatherLine(weather)){ctx.fillStyle="#a6cfff";ctx.font="600 20px system-ui,sans-serif";ctx.fillText("WEER: "+weatherLine(weather),540,1314)}
-    else {ctx.fillStyle="#7aa6d4";ctx.font="600 20px system-ui,sans-serif";ctx.fillText("SV DIEMEN JO16-3 · SAMEN STERK",540,1314)}
+    badge(312,445,logos[0],teams[0]);badge(768,445,logos[1],teams[1]);
+    ctx.font="850 32px system-ui,sans-serif";ctx.fillStyle="#bfdbff";ctx.fillText("VS",540,453);
+    teams.forEach((name,i)=>{
+      const x=i?768:312;
+      ctx.fillStyle="#ffffff";ctx.font="850 27px system-ui,sans-serif";
+      wrap(ctx,String(name).toUpperCase(),370).slice(0,2).forEach((line,k)=>ctx.fillText(line,x,575+k*32));
+    });
+    rounded(ctx,56,664,968,62,17,"#214b80");
+    ctx.fillStyle="#e8f5ff";ctx.font="800 28px system-ui,sans-serif";
+    ctx.fillText(formatDate(m.date).toUpperCase(),540,704);
+    const card=(x,y,width,height,title,value,large=false)=>{
+      rounded(ctx,x,y,width,height,23,"#123763","#3d72ac");
+      ctx.fillStyle="#a9d0fc";ctx.font="750 21px system-ui,sans-serif";ctx.fillText(title,x+width/2,y+38);
+      ctx.fillStyle="#ffffff";ctx.font=(large?"900 55px":"850 31px")+" system-ui,sans-serif";
+      const max=width-45;const lines=wrap(ctx,String(value),max);
+      lines.slice(0,2).forEach((ln,i)=>ctx.fillText(ln,x+width/2,y+(large?106:87)+i*37));
+    };
+    card(56,746,473,133,"AFTRAP",m.kickoff||"--:--",true);
+    card(550,746,474,133,"VERZAMELEN",m.meeting||"--:--",true);
+    card(56,893,732,134,"SPORTPARK",m.venue||"Locatie volgt");
+    card(805,893,219,134,"VELD",m.field||"Nog niet bekend");
+    const of=officials(state);
+    card(56,1042,473,134,"GRENSRECHTER",of.linesman);
+    card(550,1042,474,134,"SCHEIDSRECHTER",m.home==="home"?of.referee:"Gastvereniging");
+    rounded(ctx,56,1190,968,112,18,"#071d3b","#2a5a92");
+    ctx.fillStyle="#a7cfff";ctx.font="700 20px system-ui,sans-serif";
+    ctx.fillText("WEER & PRAKTISCHE INFO",540,1223);
+    ctx.fillStyle="#ffffff";ctx.font="680 20px system-ui,sans-serif";
+    const forecast=weatherLine(weather)||"Weersverwachting nog niet beschikbaar";
+    ctx.fillText(forecast,540,1254);
+    if(m.parentNote?.trim()){
+      ctx.fillStyle="#b6d6ff";ctx.font="620 17px system-ui,sans-serif";
+      const note=String(m.parentNote).replace(/\s+/g,' ').slice(0,120);
+      ctx.fillText(note.length<112?note:note.slice(0,109)+"…",540,1281);
+    }else{
+      ctx.fillStyle="#78a8dc";ctx.font="600 17px system-ui,sans-serif";
+      ctx.fillText("Google Maps-route staat in het WhatsApp-bericht",540,1281);
+    }
+    ctx.fillStyle="#90b8e8";ctx.font="800 20px system-ui,sans-serif";
+    ctx.fillText("SIAM  ·  MELCHER  ·  ROB    /    SV DIEMEN JO16-3",540,1337);
     ctx.textAlign="start";
     return canvas;
   }
