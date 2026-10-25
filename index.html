@@ -88,4 +88,5 @@ async function publishLocal(){if(!confirm('De lokale gegevens op dit apparaat al
 async function checkCloud(){await loadShared()}
 render();
 loadShared();
+setInterval(()=>{if(cloudReady&&!cloudBusy&&!cloudPending&&document.visibilityState==='visible'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))loadShared()},30000);
 </script></body></html>
