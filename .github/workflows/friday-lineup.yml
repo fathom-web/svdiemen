@@ -1,0 +1,36 @@
+name: JO16-3 Friday lineup
+
+on:
+  schedule:
+    # Check repeatedly during Friday evening, accounting for EU summer/winter time.
+    # Runs are best effort; GitHub Actions is not a precise 19:00 scheduler.
+    - cron: '7,22,37,52 17,18 * * 5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Test without changing Supabase'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jo163-friday-lineup
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@v4
+      - name: Generate next Saturday lineup
+        env:
+          SUPABASE_URL: https://pfvahwhoyicnzwnwspaf.supabase.co
+          # This is a PUBLIC, RLS-restricted client key already used by GitHub Pages.
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_Grzkc4HIqZ1gN1sktI2glQ_s9DWLAVy
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: node scripts/friday-lineup.cjs
