@@ -43,7 +43,7 @@
   function imageHtml(name,state,cssClass='team-crest'){
     const url=logoUrl(name,state),initial=initials(name);
     const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    return '<span class="'+cssClass+'" role="img" aria-label="Logo '+esc(name)+'"><span class="crest-fallback">'+esc(initial)+'</span>'+(url?'<img loading="lazy" src="'+esc(url)+'" alt="" onerror="this.style.display=\\'none\\'" onload="this.previousElementSibling.style.display=\\'none\\'">':'')+'</span>';
+    return '<span class="'+cssClass+'" role="img" aria-label="Logo '+esc(name)+'"><span class="crest-fallback">'+esc(initial)+'</span>'+(url?'<img loading="lazy" src="'+esc(url)+'" alt="" onerror="this.remove()" onload="this.previousElementSibling.remove()">':'')+'</span>';
   }
   root.JO163Logos={logoUrl,initials,getImage,drawAssets,imageHtml,HOME_LOGO};
 })(typeof globalThis!=='undefined'?globalThis:this);
