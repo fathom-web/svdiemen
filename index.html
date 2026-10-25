@@ -32,7 +32,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 @media(max-width:690px){.shell{padding:17px 13px 90px}.topbar{padding-bottom:15px}.identity strong{font-size:14px}.identity small{font-size:9px}.brand-mark{width:38px;height:38px;border-radius:11px}.sync-tag{font-size:10px;padding:8px}.nav{position:fixed;bottom:0;left:0;right:0;z-index:40;border-radius:16px 16px 0 0;margin:0;padding:8px 4px max(8px,env(safe-area-inset-bottom));background:#081932f5;backdrop-filter:blur(15px);box-shadow:0 -8px 36px #0007}.nav button{font-size:9px;gap:5px;flex-direction:column;padding:9px 2px}.nav .ico{width:20px;height:20px}.match-spotlight{padding:21px;min-height:295px}.staff-mini{width:65px;height:65px}.spot-main{gap:12px;margin:26px 0 17px}.spot-main h2{font-size:23px}.grid4{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.statcard{min-height:115px;padding:14px}.statcard strong{font-size:26px}.panel,.module{padding:15px;border-radius:15px}.heading{align-items:start}.heading h1{font-size:27px}.fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.att-row{grid-template-columns:minmax(86px,1fr) auto auto;gap:7px}.att-row .player-name{gap:7px}.att-row .avatar{width:28px;height:28px;border-radius:9px;font-size:11px}.att-row .player-name strong{font-size:11px}.segment{padding:3px;gap:1px}.segment button{padding:7px 7px;font-size:10px}.fixture{grid-template-columns:49px minmax(0,1fr);gap:10px}.fixture .btn{grid-column:1/-1;width:100%}.fixture-date b{font-size:21px}.pitch{min-height:475px;padding:25px 5px}.shirt{width:34px;height:39px;font-size:14px}.pitch-player .player-label{font-size:9px;padding:4px 2px}.cloud-status{flex-wrap:wrap}.save-bar{bottom:70px}.toast{bottom:95px;right:12px}}
 @media(max-width:380px){.fields{grid-template-columns:1fr}.segment button{padding:6px 5px}.staff-mini{width:53px;height:53px}.spot-main h2{font-size:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
-.stat-player{margin-bottom:12px}.stat-player-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:6px;color:#c4ddfc}.stat-progress{height:6px;background:#1c3658;border-radius:50px;overflow:hidden}.stat-progress i{display:block;height:100%;background:linear-gradient(90deg,#176af1,#71b5ff);border-radius:50px} .time-event{grid-template-columns:120px minmax(0,1fr)}.time-event:not(:last-child):before{left:55px}.time-node{width:112px;min-height:50px;height:auto;text-align:center;padding:8px 7px;font-size:12px;line-height:1.25}@media(max-width:690px){.time-event{grid-template-columns:92px minmax(0,1fr);gap:8px}.time-event:not(:last-child):before{left:43px}.time-node{width:86px;min-height:54px;padding:7px 5px;font-size:11px}.swap{flex-wrap:wrap}} </style></head><body>
+.stat-player{margin-bottom:12px}.stat-player-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:6px;color:#c4ddfc}.stat-progress{height:6px;background:#1c3658;border-radius:50px;overflow:hidden}.stat-progress i{display:block;height:100%;background:linear-gradient(90deg,#176af1,#71b5ff);border-radius:50px} .time-event{grid-template-columns:120px minmax(0,1fr)}.time-event:not(:last-child):before{left:55px}.time-node{width:112px;min-height:50px;height:auto;text-align:center;padding:8px 7px;font-size:12px;line-height:1.25}@media(max-width:690px){.time-event{grid-template-columns:92px minmax(0,1fr);gap:8px}.time-event:not(:last-child):before{left:43px}.time-node{width:86px;min-height:54px;padding:7px 5px;font-size:11px}.swap{flex-wrap:wrap}} .parent-grid{display:grid;grid-template-columns:1fr minmax(280px,.82fr);gap:22px}.parent-grid .whatsapp{min-height:380px}.parent-grid canvas{width:100%;height:auto;border:1px solid #35629a;border-radius:17px;box-shadow:0 18px 40px #0005;background:#06152f}.parent-grid .row-title{min-height:27px}.parent-grid .row-title .muted{font-size:12px}@media(max-width:850px){.parent-grid{grid-template-columns:1fr}.parent-grid canvas{max-width:500px}} </style></head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
 <symbol id="ic-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10h-7v-7h-4v7H3z"/></symbol>
 <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3zM17 5a3 3 0 0 1 0 6m0 3a5 5 0 0 1 4 5"/></symbol>
@@ -92,7 +92,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <label>Aftrap<input type="time" id="kickoff" onchange="saveMatch()"></label>
 <label>Verzamelen<input type="time" id="meeting" onchange="saveMatch()"></label>
 <label>Sportpark / locatie<input id="venue" oninput="saveMatch()" placeholder="Sportpark"></label>
-<label>Veld<input id="field" oninput="saveMatch()" placeholder="Optioneel"></label>
+<label>Veld<input id="field" oninput="saveMatch()" placeholder="Optioneel"></label><label style="grid-column:1/-1">Extra informatie voor ouders<textarea id="parentNote" rows="2" oninput="saveMatch()" placeholder="Bijvoorbeeld: neem een extra shirt mee of meld je af bij de trainers"></textarea></label>
 <label>Thuis / uit<select id="home" onchange="saveMatch()"><option value="home">Thuis</option><option value="away">Uit</option></select></label>
 <label>Vlaggen — rotatie<input id="linesmanList" oninput="saveMatch()" placeholder="Aarav, Meron, ..."></label>
 <label>Fluiten — rotatie<input id="refereeList" oninput="saveMatch()" placeholder="Mika, Rivano, ..."></label></div>
@@ -101,7 +101,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <section class="module"><div class="row-title"><h2>Basiself • 4-3-3</h2><span class="count-pill">2 CONTROLEREND + 10</span></div><p class="pitch-hint">Tactiek: vier verdedigers, twee middenvelders achter de 10 en drie aanvallers.</p><div class="pitch" id="pitch"></div><h2 class="section-title" style="margin-top:20px">Wisselbank</h2><div id="bench"></div></section>
 <section class="module"><div class="row-title"><h2>Wisseltijdlijn</h2><span class="count-pill">20 min 1e helft · RUST · 20 min 2e helft</span></div><div class="timeline" id="subs"></div><h2 class="section-title" style="margin-top:24px">Officials</h2><div id="officials"></div><div class="actions"><button class="btn secondary" onclick="finishMatch()">Wedstrijd afronden & minuten vastleggen</button></div><p class="caption">Speelminuten tellen pas mee wanneer je de wedstrijd afrondt.</p></section>
 </div>
-<section class="module" style="margin-top:17px"><div class="row-title"><h2>Wedstrijdbericht voor ouders</h2><span class="count-pill">WHATSAPP</span></div><div id="message" class="whatsapp"></div><div class="actions"><button class="btn" onclick="copyMessage()">Kopieer wedstrijdbericht</button></div></section>
+<section class="module" style="margin-top:17px"><div class="row-title"><h2>Wedstrijdbericht voor ouders</h2><span class="count-pill">WHATSAPP</span></div><div class="parent-grid"><div><div class="row-title"><span class="muted">Kopieerklaar voor WhatsApp</span><span class="count-pill" id="weatherBadge">WEER OPHALEN</span></div><div id="message" class="whatsapp"></div><div class="actions"><button class="btn" onclick="copyMessage()">Kopieer WhatsApp-tekst</button><button class="btn secondary" onclick="copyMapsLink()">Google Maps-route</button></div></div><div><div class="row-title"><span class="muted">Automatische wedstrijdposter</span><span class="count-pill">1080 × 1350 PNG</span></div><canvas id="parentPoster" width="1080" height="1350" aria-label="Wedstrijdposter van SV Diemen JO16-3"></canvas><div class="actions"><button class="btn" onclick="copyPoster()">Kopieer afbeelding</button><button class="btn secondary" onclick="downloadPoster()">Download PNG</button></div><p class="caption">Kopieer de afbeelding naar WhatsApp, of download hem als PNG. Voeg voor de route de tekst met Google Maps-link toe.</p></div></div></section>
 </section>
 <section id="history" class="pane">
 <div class="heading"><div><span class="kicker">TERUGKIJKEN & LEREN</span><h1>Wedstrijdhistorie</h1><p>Speelminuten, officials en betrouwbare back-ups.</p></div></div>
@@ -112,6 +112,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <footer>SV Diemen JO16-3 Team Manager · Met zorg gebouwd voor de staf · 2026/2027</footer>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div>
+<script src="./parent-message.js"></script>
 <script>
 const POS=['GK','LB','LCB','RCB','RB','LDM','RDM','CAM','LW','ST','RW'];
 const LINES=[['LW','ST','RW'],['CAM'],['LDM','RDM'],['LB','LCB','RCB','RB'],['GK']];
@@ -149,8 +150,8 @@ function renderAttendance(){document.getElementById('weekDate').value=s.week;doc
 function renderStats(){document.getElementById('statPlayers').textContent=s.players.length;document.getElementById('statTraining').textContent=s.players.reduce((n,p)=>n+['di','do'].filter(d=>s.att[attendanceKey(p.id,d)]).length,0)+' / '+(s.players.length*2);document.getElementById('nextMatch').textContent=s.match.opponent?(s.match.opponent+' • '+(s.match.date||'Datum nog niet ingevuld')+' • '+s.match.kickoff):'Vul de tegenstander en wedstrijdgegevens in via Wedstrijd.'}
 function renderFixtures(){const target=document.getElementById('fixtureList');if(!target)return;target.innerHTML=s.fixtures.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(f=>{const active=s.match.date===f.date&&s.match.opponent===f.opponent;const d=new Date(f.date+'T12:00:00').toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});return '<div class="fixture '+(active?'current':'')+'"><div class="fixture-date">'+esc(d)+'<br>'+esc(f.kickoff)+'</div><div class="fixture-details"><strong>'+esc(f.home==='home'?'SV Diemen JO16-3 – '+f.opponent:f.opponent+' – SV Diemen JO16-3')+'</strong><small>'+(f.home==='home'?'THUIS':'UIT')+' · '+esc(f.venue)+'</small></div><button class="btn '+(active?'secondary':'')+'" onclick="selectFixture(\''+f.date+'\')">'+(active?'Geselecteerd':'Selecteer')+'</button></div>'}).join('')}
 function meetingBefore(kickoff){if(!/^\d{2}:\d{2}$/.test(kickoff||''))return '';const [hh,mm]=kickoff.split(':').map(Number);const t=(hh*60+mm-45+1440)%1440;return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
-function selectFixture(date){const f=s.fixtures.find(x=>x.date===date);if(!f)return;if(s.generated&&(s.generated.date!==f.date||s.generated.opponent!==f.opponent)&&!confirm('De huidige opstelling verbergen en deze wedstrijd selecteren?'))return;s.match={...s.match,...f,meeting:meetingBefore(f.kickoff),field:f.field||''};if(s.generated&&(s.generated.date!==f.date||s.generated.opponent!==f.opponent))s.generated=null;s.week=monday(f.date);save();render();tab('match');document.getElementById('matchDate').value=f.date;document.getElementById('kickoff').value=f.kickoff}
-function saveMatch(){const previousKickoff=s.match.kickoff;for(const k of ['opponent','date','kickoff','meeting','venue','field','home','linesmanList','refereeList'])s.match[k]=document.getElementById(k==='date'?'matchDate':k).value;if(s.match.kickoff!==previousKickoff){s.match.meeting=meetingBefore(s.match.kickoff);document.getElementById('meeting').value=s.match.meeting;}const i=s.fixtures.findIndex(f=>f.date===s.match.date&&f.opponent===s.match.opponent);if(i>=0){const f=s.fixtures[i];for(const k of ['kickoff','meeting','venue','field','home'])f[k]=s.match[k];}save();renderStats();renderFixtures()}
+function selectFixture(date){const f=s.fixtures.find(x=>x.date===date);if(!f)return;if(s.generated&&(s.generated.date!==f.date||s.generated.opponent!==f.opponent)&&!confirm('De huidige opstelling verbergen en deze wedstrijd selecteren?'))return;s.match={...s.match,...f,meeting:meetingBefore(f.kickoff),field:f.field||'',parentNote:f.parentNote||''};if(s.generated&&(s.generated.date!==f.date||s.generated.opponent!==f.opponent))s.generated=null;s.week=monday(f.date);save();render();tab('match');document.getElementById('matchDate').value=f.date;document.getElementById('kickoff').value=f.kickoff}
+function saveMatch(){const previousKickoff=s.match.kickoff;for(const k of ['opponent','date','kickoff','meeting','venue','field','home','linesmanList','refereeList','parentNote'])s.match[k]=document.getElementById(k==='date'?'matchDate':k).value;if(s.match.kickoff!==previousKickoff){s.match.meeting=meetingBefore(s.match.kickoff);document.getElementById('meeting').value=s.match.meeting;}const i=s.fixtures.findIndex(f=>f.date===s.match.date&&f.opponent===s.match.opponent);if(i>=0){const f=s.fixtures[i];for(const k of ['kickoff','meeting','venue','field','home','parentNote'])f[k]=s.match[k];}save();renderStats();renderFixtures()}
 function renderMatchForm(){if(s.match.kickoff&&!s.match.meeting)s.match.meeting=meetingBefore(s.match.kickoff);for(const k of ['opponent','date','kickoff','meeting','venue','field','home','linesmanList','refereeList'])document.getElementById(k==='date'?'matchDate':k).value=s.match[k]||''}
 const training=p=>['di','do'].filter(d=>s.att[attendanceKey(p.id,d)]==='yes').length;
 const suitability=(p,pos)=>{const prefs=p.preferences||[p.primary,p.secondary].filter(Boolean);if(pos==='GK')return prefs[0]==='GK'?160:-10000;if(prefs[0]==='GK')return -10000;const at=prefs.indexOf(pos);if(at>=0){if(['LCB','RCB'].includes(pos)&&prefs.includes('LCB')&&prefs.includes('RCB'))return 120;return Math.max(30,120-at*24)}return -160};
@@ -373,6 +374,75 @@ renderHistory=function(){
  }).join('');
 };
 render=function(){renderRoster();renderAttendance();renderFixtures();renderMatchForm();renderStats();renderGenerated();renderHistory()};
+
+
+let parentWeather=null,parentWeatherKey="",parentWeatherFetched=0,parentWeatherPromise=null;
+function parentKey(){const m=s.match;return [m.date,m.venue,m.home,m.opponent].join('|')}
+function updateParentView(){
+ const m=s.match;
+ const current=parentKey();
+ const applicable=parentWeatherKey===current?parentWeather:null;
+ const box=document.getElementById('message');
+ if(box)box.textContent=JO163Parent.makeMessage(s,applicable);
+ const badge=document.getElementById('weatherBadge');
+ if(badge)badge.textContent=applicable?'WEER BESCHIKBAAR':'WEER OPTIONEEL';
+ const poster=document.getElementById('parentPoster');
+ if(poster)JO163Parent.drawPoster(poster,s,applicable);
+}
+async function refreshWeather(){
+ const m=s.match,key=parentKey();
+ if(!m.date||!m.venue){parentWeather=null;parentWeatherKey=key;updateParentView();return}
+ if(key===parentWeatherKey&&Date.now()-parentWeatherFetched<1800000){updateParentView();return}
+ if(parentWeatherPromise&&parentWeatherPromise.key===key)return parentWeatherPromise.promise;
+ const request=(async()=>{
+   try{
+     const result=await JO163Parent.getWeather({...m});
+     if(parentKey()===key){parentWeather=result;parentWeatherKey=key;parentWeatherFetched=Date.now();updateParentView()}
+   }catch(error){
+     if(parentKey()===key){parentWeather=null;parentWeatherKey=key;parentWeatherFetched=Date.now();updateParentView()}
+   }
+ })();
+ parentWeatherPromise={key,promise:request};
+ await request;
+}
+function refreshParent(){updateParentView();refreshWeather()}
+makeMessage=function(){return JO163Parent.makeMessage(s,parentWeatherKey===parentKey()?parentWeather:null)};
+copyMessage=async function(){
+ if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');
+ try{await navigator.clipboard.writeText(makeMessage());showToast('WhatsApp-bericht gekopieerd');}catch(error){showToast('Kopiëren niet mogelijk: selecteer het bericht handmatig')}
+};
+function copyMapsLink(){
+ const url=JO163Parent.mapsUrl(s.match);
+ if(!url)return showToast('Voer eerst een sportpark of locatie in');
+ navigator.clipboard?.writeText(url).then(()=>showToast('Google Maps-link gekopieerd')).catch(()=>window.open(url,'_blank','noopener,noreferrer'));
+}
+function posterBlob(){return new Promise((resolve,reject)=>{
+ const c=document.getElementById('parentPoster');if(!c)return reject(Error('Geen poster'));
+ JO163Parent.drawPoster(c,s,parentWeatherKey===parentKey()?parentWeather:null);
+ c.toBlob(blob=>blob?resolve(blob):reject(Error('Geen afbeelding')),'image/png');
+})}
+function downloadBlob(blob){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download='JO16-3-matchday-'+(s.match.date||'wedstrijd')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
+async function downloadPoster(){if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');try{downloadBlob(await posterBlob());showToast('Wedstrijdposter gedownload')}catch(e){showToast('PNG maken mislukt')}}
+async function copyPoster(){
+ if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');
+ try{
+  const blob=await posterBlob();
+  if(navigator.clipboard?.write&&typeof ClipboardItem!=='undefined'){
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+    showToast('Poster gekopieerd · plak in WhatsApp');
+  }else if(navigator.share&&navigator.canShare){
+    const file=new File([blob],'JO16-3-matchday.png',{type:'image/png'});
+    if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'JO16-3 wedstrijd'});return}
+    downloadBlob(blob);showToast('Afbeelding gedownload');
+  }else{downloadBlob(blob);showToast('Kopiëren niet ondersteund; afbeelding gedownload')}
+ }catch(e){showToast('Afbeelding kopiëren lukte niet. Probeer Download PNG.')}
+}
+const renderParentBase=render;
+render=function(){renderParentBase();refreshParent()};
+const renderGeneratedParentBase=renderGenerated;
+renderGenerated=function(){renderGeneratedParentBase();refreshParent()};
+const saveMatchParentBase=saveMatch;
+saveMatch=function(){saveMatchParentBase();refreshParent()};
 
 render();
 loadShared();
