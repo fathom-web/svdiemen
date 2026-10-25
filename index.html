@@ -32,7 +32,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 @media(max-width:690px){.shell{padding:17px 13px 90px}.topbar{padding-bottom:15px}.identity strong{font-size:14px}.identity small{font-size:9px}.brand-mark{width:38px;height:38px;border-radius:11px}.sync-tag{font-size:10px;padding:8px}.nav{position:fixed;bottom:0;left:0;right:0;z-index:40;border-radius:16px 16px 0 0;margin:0;padding:8px 4px max(8px,env(safe-area-inset-bottom));background:#081932f5;backdrop-filter:blur(15px);box-shadow:0 -8px 36px #0007}.nav button{font-size:9px;gap:5px;flex-direction:column;padding:9px 2px}.nav .ico{width:20px;height:20px}.match-spotlight{padding:21px;min-height:295px}.staff-mini{width:65px;height:65px}.spot-main{gap:12px;margin:26px 0 17px}.spot-main h2{font-size:23px}.grid4{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.statcard{min-height:115px;padding:14px}.statcard strong{font-size:26px}.panel,.module{padding:15px;border-radius:15px}.heading{align-items:start}.heading h1{font-size:27px}.fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.att-row{grid-template-columns:minmax(86px,1fr) auto auto;gap:7px}.att-row .player-name{gap:7px}.att-row .avatar{width:28px;height:28px;border-radius:9px;font-size:11px}.att-row .player-name strong{font-size:11px}.segment{padding:3px;gap:1px}.segment button{padding:7px 7px;font-size:10px}.fixture{grid-template-columns:49px minmax(0,1fr);gap:10px}.fixture .btn{grid-column:1/-1;width:100%}.fixture-date b{font-size:21px}.pitch{min-height:475px;padding:25px 5px}.shirt{width:34px;height:39px;font-size:14px}.pitch-player .player-label{font-size:9px;padding:4px 2px}.cloud-status{flex-wrap:wrap}.save-bar{bottom:70px}.toast{bottom:95px;right:12px}}
 @media(max-width:380px){.fields{grid-template-columns:1fr}.segment button{padding:6px 5px}.staff-mini{width:53px;height:53px}.spot-main h2{font-size:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
-</style></head><body>
+.stat-player{margin-bottom:12px}.stat-player-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:6px;color:#c4ddfc}.stat-progress{height:6px;background:#1c3658;border-radius:50px;overflow:hidden}.stat-progress i{display:block;height:100%;background:linear-gradient(90deg,#176af1,#71b5ff);border-radius:50px} </style></head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
 <symbol id="ic-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10h-7v-7h-4v7H3z"/></symbol>
 <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3zM17 5a3 3 0 0 1 0 6m0 3a5 5 0 0 1 4 5"/></symbol>
@@ -105,7 +105,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 </section>
 <section id="history" class="pane">
 <div class="heading"><div><span class="kicker">TERUGKIJKEN & LEREN</span><h1>Wedstrijdhistorie</h1><p>Speelminuten, officials en betrouwbare back-ups.</p></div></div>
-<div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Importeer back-up<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><h2 style="margin-top:26px">Over de trainers</h2><img src="./SV%20Diemen%20JO16-3%20Staff%20Badge.png" alt="Siam, Melcher en Rob — JO16-3 staf" style="display:block;width:min(230px,100%);border-radius:50%;margin:15px auto"></section></div>
+<div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div><h2 style="margin:24px 0 12px">Spelerstatistieken</h2><div id="playerStats"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Importeer back-up<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><h2 style="margin-top:26px">Over de trainers</h2><img src="./SV%20Diemen%20JO16-3%20Staff%20Badge.png" alt="Siam, Melcher en Rob — JO16-3 staf" style="display:block;width:min(230px,100%);border-radius:50%;margin:15px auto"></section></div>
 </section>
 <section id="cloudConnection" class="cloud-status" aria-live="polite"><span id="cloudState">Supabase-verbinding controleren…</span><div class="actions"><button class="btn secondary" onclick="loadShared()">Ververs gedeelde gegevens</button><button class="btn secondary" id="publishState" onclick="publishLocal()" hidden>Lokale gegevens publiceren</button></div></section>
 <div class="notice">Testfase zonder login: de gedeelde gegevens zijn publiek toegankelijk en de laatst opgeslagen wijziging wint. Vrijdag 19:00 is nog geen automatische servertaak.</div>
@@ -326,6 +326,19 @@ renderHistory=function(){
 };
 const originalFinishMatch=finishMatch;
 finishMatch=function(){originalFinishMatch();renderStats()};
+
+const originalHistoryView=renderHistory;
+renderHistory=function(){
+ originalHistoryView();
+ const players=[...s.players].sort((a,b)=>(b.minutes||0)-(a.minutes||0));
+ const maxMinutes=Math.max(80,...players.map(p=>p.minutes||0));
+ document.getElementById('playerStats').innerHTML=players.map(p=>{
+  const records=Object.keys(s.att||{}).filter(k=>k.endsWith(':'+p.id));
+  const attended=records.filter(k=>s.att[k]==='yes').length;
+  const pct=Math.round(100*(p.minutes||0)/maxMinutes);
+  return '<div class="stat-player"><div class="stat-player-top"><strong>'+esc(p.name)+'</strong><span>'+Number(p.minutes||0)+' min · '+attended+'/'+records.length+' trainingen</span></div><div class="stat-progress"><i style="width:'+pct+'%"></i></div></div>';
+ }).join('');
+};
 render=function(){renderRoster();renderAttendance();renderFixtures();renderMatchForm();renderStats();renderGenerated();renderHistory()};
 
 render();
