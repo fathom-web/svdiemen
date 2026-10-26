@@ -11,6 +11,15 @@
     {time:40,label:'RUST',description:'Rust na 40 minuten'},
     {time:60,label:'20 minuten 2e helft',description:'Na 20 minuten tweede helft'}
   ];
+  function matchPeriodInfo(state){
+    const half=state?.teamName==='JO14-3'?35:40;
+    return {
+      duration:half*2,
+      periods:[20,half-20,20,half-20],
+      moments:[{...MOMENTS[0]},{...MOMENTS[1],time:half,description:'Rust na '+half+' minuten'},
+        {...MOMENTS[2],time:half+20}]
+    };
+  }
   function monday(date){
     const d=new Date(date+'T12:00:00Z');
     d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);
@@ -114,9 +123,9 @@
   function calculateRotations(state,match,lineup,available){
     const keeper=lineup.GK,current={...lineup},mins=Object.fromEntries(available.map(p=>[p.id,0]));
     const week=monday(match.date),map=new Map(state.players.map(p=>[p.id,p]));
-    const swaps=[],warnings=[];
+    const swaps=[],warnings=[],period=matchPeriodInfo(state);
     for(let stage=0;stage<4;stage++){
-      for(const id of Object.values(current))mins[id]=(mins[id]||0)+20;
+      for(const id of Object.values(current))mins[id]=(mins[id]||0)+period.periods[stage];
       if(stage===3)break;
       const playing=new Set(Object.values(current));
       const bench=available.filter(p=>p.id!==keeper&&!playing.has(p.id));
@@ -126,9 +135,9 @@
         if(suitability(player,change.pos)<0)warnings.push(player.name+' staat op een niet-opgegeven positie: '+change.pos);
         current[change.pos]=change.in;
       }
-      swaps.push({...MOMENTS[stage],changes});
+      swaps.push({...period.moments[stage],changes});
     }
-    return {swaps,minutes:mins,warnings:[...new Set(warnings)],duration:80,rotationVersion:5};
+    return {swaps,minutes:mins,warnings:[...new Set(warnings)],duration:period.duration,rotationVersion:6};
   }
   function createPlan(state,match,options={}){
     if(!match?.date||!match?.opponent)throw Error('Geen wedstrijd geselecteerd');
@@ -149,5 +158,5 @@
       created:options.created||new Date().toISOString(),source:options.source||'handmatig'
     };
   }
-  return {createPlan,calculateRotations,monday,keyOf,unavailable,suitability,MOMENTS};
+  return {createPlan,calculateRotations,monday,keyOf,unavailable,suitability,MOMENTS,matchPeriodInfo};
 });
