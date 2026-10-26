@@ -192,15 +192,124 @@ function render(){renderFixtures();renderRoster();renderAttendance();renderMatch
 // Supabase shared prototype. No authentication: public data, last completed write wins.
 const SUPABASE_URL='https://pfvahwhoyicnzwnwspaf.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Grzkc4HIqZ1gN1sktI2glQ_s9DWLAVy';
+// All three teams share existing Supabase row id=1 without changing the database schema.
+// JO16-3 remains the legacy root document for backward compatibility and the Friday action.
+// Other teams are isolated in root.footballforgeTeams[TEAM_ID].
+// Each write reads the latest root and uses a timestamp compare-and-swap to avoid
+// replacing changes from another team.
 const CLOUD_ENDPOINT=SUPABASE_URL+'/rest/v1/jo163_app_state';
 const cloudHeaders={'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'};
-let cloudReady=false,cloudTimer=null,cloudBusy=false,cloudPending=false,cloudRevision=0;
-const cloudMsg=m=>{document.getElementById('cloudState').textContent=m};
-async function cloudRequest(path='',options={}){const res=await fetch(CLOUD_ENDPOINT+path,{...options,headers:{...cloudHeaders,...(options.headers||{})}});if(!res.ok)throw Error('HTTP '+res.status+' '+(await res.text()).slice(0,130));return res.status===204?null:res.json();}
-function queueCloudSave(){cloudRevision++;cloudPending=true;clearTimeout(cloudTimer);cloudTimer=setTimeout(flushCloud,550);cloudMsg('Wijzigingen lokaal opgeslagen · synchroniseren…')}
-async function flushCloud(){if(!cloudReady||cloudBusy||!cloudPending)return;cloudBusy=true;cloudPending=false;const revision=cloudRevision;const snapshot=JSON.stringify(s);try{await cloudRequest('?id=eq.1',{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({data:JSON.parse(snapshot),updated_at:new Date().toISOString()})});cloudMsg('Gedeeld opgeslagen in Supabase · laatste wijziging gesynchroniseerd');}catch(e){cloudPending=true;cloudMsg('Opslaan naar Supabase mislukt: '+e.message+' · lokale back-up bewaard');}finally{cloudBusy=false;if(cloudRevision!==revision||cloudPending){clearTimeout(cloudTimer);cloudTimer=setTimeout(flushCloud,1800)}}}
-async function loadShared(){if(cloudBusy||cloudPending){cloudMsg('Wacht tot de lokale wijzigingen zijn gesynchroniseerd');return}try{const rows=await cloudRequest('?select=data,updated_at&id=eq.1');if(!rows.length)throw Error('Tabel nog niet aangemaakt; voer supabase-setup.sql uit');const data=rows[0].data;if(!Array.isArray(data?.players)){cloudReady=false;document.getElementById('publishState').hidden=false;cloudMsg('Gedeelde database is leeg · klik Lokale gegevens publiceren (eenmalig)');return}cloudReady=false;s=data;s.teamName=TEAM_NAME;if(!Array.isArray(s.fixtures))s.fixtures=FIXTURES.map(f=>({...f,meeting:'',field:''}));for(const f of FIXTURES)if(!s.fixtures.some(x=>x.date===f.date&&x.opponent===f.opponent))s.fixtures.push({...f,meeting:'',field:''});localStorage.setItem(KEY,JSON.stringify(s));render();cloudReady=true;document.getElementById('publishState').hidden=true;cloudMsg('Verbonden met Supabase · gedeelde gegevens geladen');}catch(e){cloudReady=false;cloudMsg('Gedeelde opslag nog niet actief: '+e.message+' · lokaal blijft werken')}}
-async function publishLocal(){if(!confirm('De lokale gegevens op dit apparaat als eerste gedeelde versie publiceren? Doe dit maar op één apparaat.'))return;try{await cloudRequest('?id=eq.1',{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({data:s,updated_at:new Date().toISOString()})});cloudMsg('Eerste gedeelde gegevens gepubliceerd');await loadShared()}catch(e){cloudMsg('Publiceren mislukt: '+e.message)}}
+let cloudReady=false,cloudTimer=null,cloudBusy=false,cloudPending=false,cloudRevision=0,cloudLoading=false;
+const cloudMsg=m=>{const el=document.getElementById('cloudState');if(el)el.textContent=m};
+const cloudTeamData=(root)=>IS_JO163?root:root?.footballforgeTeams?.[TEAM_ID];
+const validTeamData=x=>Boolean(x&&Array.isArray(x.players)&&x.match&&x.att);
+async function cloudRequest(path='',options={}){
+ const res=await fetch(CLOUD_ENDPOINT+path,{...options,headers:{...cloudHeaders,...(options.headers||{})}});
+ if(!res.ok)throw Error('HTTP '+res.status+' '+(await res.text()).slice(0,130));
+ return res.status===204?null:res.json();
+}
+async function fetchCloudRow(){
+ const rows=await cloudRequest('?select=data,updated_at&id=eq.1');
+ if(!rows.length)throw Error('Database niet geïnitialiseerd. Voer supabase-setup.sql uit.');
+ return rows[0];
+}
+function mergeTeamIntoRoot(root,snapshot){
+ const result={...(root&&typeof root==='object'?root:{})};
+ if(IS_JO163){
+   // Preserve current parallel team documents even when JO16-3 saved an old snapshot.
+   Object.assign(result,snapshot);
+   result.footballforgeTeams=root?.footballforgeTeams||{};
+ }else{
+   result.footballforgeTeams={...(root?.footballforgeTeams||{}),[TEAM_ID]:snapshot};
+ }
+ return result;
+}
+async function persistTeamSnapshot(snapshot){
+ for(let attempt=0;attempt<5;attempt++){
+  const row=await fetchCloudRow();
+  const original=row.data||{};
+  const next=mergeTeamIntoRoot(original,snapshot);
+  const now=new Date().toISOString();
+  const path='?id=eq.1&updated_at=eq.'+encodeURIComponent(row.updated_at);
+  const result=await cloudRequest(path,{
+    method:'PATCH',
+    headers:{Prefer:'return=representation'},
+    body:JSON.stringify({data:next,updated_at:now})
+  });
+  if(result.length===1)return true;
+ }
+ throw Error('Andere wijziging tegelijk opgeslagen. Probeer opnieuw.');
+}
+function queueCloudSave(){
+ cloudRevision++;cloudPending=true;clearTimeout(cloudTimer);
+ cloudTimer=setTimeout(flushCloud,650);
+ cloudMsg('Wijzigingen lokaal bewaard · delen met '+TEAM_NAME+'…');
+}
+async function flushCloud(){
+ if(!cloudReady||cloudBusy||!cloudPending)return;
+ cloudBusy=true;cloudPending=false;
+ const revision=cloudRevision,snapshot=JSON.parse(JSON.stringify(s));
+ try{
+  await persistTeamSnapshot(snapshot);
+  cloudMsg('✓ '+TEAM_NAME+' · gedeeld opgeslagen in Supabase');
+ }catch(e){
+  cloudPending=true;
+  cloudMsg('Synchronisatie mislukt: '+e.message+' · lokale back-up bewaard');
+ }finally{
+  cloudBusy=false;
+  if(cloudRevision!==revision||cloudPending){
+    clearTimeout(cloudTimer);
+    cloudTimer=setTimeout(flushCloud,2500);
+  }
+ }
+}
+async function loadShared(){
+ if(cloudLoading)return;
+ if(cloudBusy||cloudPending){cloudMsg('Wacht tot jouw wijzigingen zijn gesynchroniseerd');return}
+ cloudLoading=true;
+ try{
+  const row=await fetchCloudRow();
+  const teamData=cloudTeamData(row.data);
+  if(!validTeamData(teamData)){
+    if(IS_JO163){
+      cloudReady=false;
+      document.getElementById('publishState').hidden=false;
+      cloudMsg('JO16-3 nog niet gedeeld · publiceer bestaande lokale gegevens eenmalig');
+      return;
+    }
+    // First access to a new team creates an empty shared team (or migrates existing local work).
+    const seed={...s,teamName:TEAM_NAME,fixtures:Array.isArray(s.fixtures)?s.fixtures:[]};
+    await persistTeamSnapshot(seed);
+    cloudReady=true;
+    cloudMsg('✓ '+TEAM_NAME+' aangemaakt en verbonden met Supabase');
+    document.getElementById('publishState').hidden=true;
+    return;
+  }
+  s={...teamData,teamName:TEAM_NAME};
+  if(!Array.isArray(s.fixtures))s.fixtures=[];
+  if(IS_JO163)for(const f of FIXTURES)if(!s.fixtures.some(x=>x.date===f.date&&x.opponent===f.opponent))s.fixtures.push({...f,meeting:'',field:''});
+  localStorage.setItem(KEY,JSON.stringify(s));
+  cloudReady=true;
+  document.getElementById('publishState').hidden=true;
+  render();
+  cloudMsg('✓ '+TEAM_NAME+' · gedeelde database verbonden');
+ }catch(e){
+  cloudReady=false;
+  document.getElementById('publishState').hidden=false;
+  cloudMsg('Supabase niet beschikbaar: '+e.message+' · lokaal opgeslagen');
+ }finally{cloudLoading=false}
+}
+async function publishLocal(){
+ if(!confirm('De lokale gegevens van '+TEAM_NAME+' delen met alle trainers?'))return;
+ cloudBusy=true;
+ try{
+  await persistTeamSnapshot({...s,teamName:TEAM_NAME});
+  cloudReady=true;
+  cloudMsg('✓ '+TEAM_NAME+' gedeeld opgeslagen in Supabase');
+  document.getElementById('publishState').hidden=true;
+ }catch(e){cloudMsg('Publiceren mislukt: '+e.message)}
+ finally{cloudBusy=false}
+}
 async function checkCloud(){await loadShared()}
 
 /* PREMIUM UI V3: visual renderers, no changes to stored JSON format */
@@ -532,16 +641,11 @@ const saveMatchParentBase=saveMatch;
 saveMatch=function(){saveMatchParentBase();refreshParent()};
 
 render();
-if(IS_JO163){loadShared()}else{
-  document.getElementById('cloudState').textContent='Dit team wordt voorlopig lokaal opgeslagen op dit apparaat';
-  document.getElementById('headerConnection').textContent='LOKALE TESTVERSIE';
-  document.getElementById('publishState').hidden=true;
-  document.querySelector('#cloudConnection button').hidden=true;
-}
+loadShared();
 document.getElementById('teamHeaderTitle').textContent=TEAM_NAME;
 document.getElementById('dashboardTeamLabel').textContent='FOOTBALLFORGE · '+TEAM_NAME;
 document.getElementById('positionHint').textContent=IS_JO163?'Positievoorkeuren op volgorde. Ravi, Yusuf en Meron spelen 3/4; David blijft keeper.':'Voeg spelers toe en geef hun positievoorkeuren op. Keeper = 1, rechtsback = 2, enzovoort.';
 document.getElementById('teamFooter').textContent='FootballForge · SV Diemen '+TEAM_NAME+' · 2026/2027';
-document.getElementById('securityNote').textContent=IS_JO163?'JO16-3 deelt gegevens via de bestaande Supabase-testkoppeling. De toegangscode 1111 is geen beveiligde login; de gedeelde database is nog publiek toegankelijk.':'Dit team wordt voorlopig alleen op dit apparaat opgeslagen. De code 1111 is een eenvoudige toegangsdrempel, geen echte beveiliging. Maak regelmatig een JSON-back-up.';
-setInterval(()=>{if(cloudReady&&!cloudBusy&&!cloudPending&&document.visibilityState==='visible'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))loadShared()},30000);
+document.getElementById('securityNote').textContent='Alle teams delen gegevens via Supabase, met aparte teamopslag. De toegangscode 1111 is geen beveiligde login en de database is publiek toegankelijk. Gebruik geen gevoelige persoonsgegevens.';
+setInterval(()=>{if(cloudReady&&!cloudBusy&&!cloudPending&&!cloudLoading&&document.visibilityState==='visible'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))loadShared()},30000);
 </script></body></html>
