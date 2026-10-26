@@ -66,13 +66,13 @@
     return bits.join(" · ");
   }
   function makeMessage(state,weather){
-    const m=matchInfo(state);
+    const m=matchInfo(state),team=String(state?.teamName||'JO16-3');
     if(!m.date||!m.opponent)return "Selecteer eerst een wedstrijd om de aankondiging te maken.";
     const home=m.home==="home",opp=String(m.opponent).trim(),of=officials(state);
     const lines=[
-      "*SV DIEMEN JO16-3 | MATCHDAY*",
+      "*SV DIEMEN "+team+" | MATCHDAY*",
       "",
-      home?"*SV Diemen JO16-3 – "+opp+"*":"*"+opp+" – SV Diemen JO16-3*",
+      home?"*SV Diemen "+team+" – "+opp+"*":"*"+opp+" – SV Diemen "+team+"*",
       home?"Thuiswedstrijd":"Uitwedstrijd",
       "",
       "Datum: "+formatDate(m.date),
@@ -86,7 +86,7 @@
     lines.push("","Grensrechter: "+of.linesman);
     if(home)lines.push("Scheidsrechter: "+of.referee);
     if(m.parentNote?.trim())lines.push("","\uD83D\uDCCC "+m.parentNote.trim());
-    lines.push("","Zorg dat je op tijd bent, neem je spullen mee en meld onverwachte afwezigheid direct bij de trainers.","","*Tot zaterdag!*\nSiam, Melcher & Rob");
+    lines.push("","Zorg dat je op tijd bent, neem je spullen mee en meld onverwachte afwezigheid direct bij de trainers.","","*Tot zaterdag!*\n"+(team==="JO16-3"?"Siam, Melcher & Rob":"De trainers"));
     return lines.join("\n");
   }
   function wrap(ctx,str,maxWidth){
@@ -102,7 +102,7 @@
     if(stroke){ctx.lineWidth=2;ctx.strokeStyle=stroke;ctx.stroke();}
   }
   function drawPoster(canvas,state,weather,logos=[]){
-    const m=matchInfo(state),ctx=canvas.getContext("2d"),W=1080,H=1350;
+    const m=matchInfo(state),team=String(state?.teamName||"JO16-3"),ctx=canvas.getContext("2d"),W=1080,H=1350;
     canvas.width=W;canvas.height=H;
     const bg=ctx.createLinearGradient(0,0,1080,1350);
     bg.addColorStop(0,"#0c3269");bg.addColorStop(.45,"#071936");bg.addColorStop(1,"#061329");
@@ -111,13 +111,13 @@
     [250,340,430].forEach(radius=>{ctx.beginPath();ctx.arc(960,160,radius,0,Math.PI*2);ctx.stroke()});
     rounded(ctx,56,49,968,114,28,"#ffffff0d","#679de444");
     ctx.fillStyle="#ffffff";ctx.font="900 40px system-ui,sans-serif";ctx.fillText("SV DIEMEN",92,102);
-    ctx.fillStyle="#a3caff";ctx.font="750 23px system-ui,sans-serif";ctx.fillText("JO16-3  /  TEAM MANAGER",94,136);
+    ctx.fillStyle="#a3caff";ctx.font="750 23px system-ui,sans-serif";ctx.fillText(team+"  /  TEAM MANAGER",94,136);
     ctx.textAlign="center";
     rounded(ctx,56,186,968,460,32,"#15509b","#4381d5");
     ctx.fillStyle="#bbddff";ctx.font="750 26px system-ui,sans-serif";
     ctx.fillText(m.home==="home"?"THUISWEDSTRIJD":"UITWEDSTRIJD",540,230);
     ctx.fillStyle="#ffffff";ctx.font="1000 70px system-ui,sans-serif";ctx.fillText("MATCHDAY",540,317);
-    const teams=m.home==="home"?["SV DIEMEN JO16-3",m.opponent||"TEGENSTANDER"]:[m.opponent||"TEGENSTANDER","SV DIEMEN JO16-3"];
+    const teams=m.home==="home"?["SV DIEMEN "+team,m.opponent||"TEGENSTANDER"]:[m.opponent||"TEGENSTANDER","SV DIEMEN "+team];
     function badge(cx,cy,logo,name){
       ctx.fillStyle="#ffffff";ctx.beginPath();ctx.arc(cx,cy,95,0,Math.PI*2);ctx.fill();
       ctx.save();ctx.beginPath();ctx.arc(cx,cy,87,0,Math.PI*2);ctx.clip();
@@ -172,7 +172,7 @@
       ctx.fillText("Google Maps-route staat in het WhatsApp-bericht",540,1281);
     }
     ctx.fillStyle="#90b8e8";ctx.font="800 20px system-ui,sans-serif";
-    ctx.fillText("SIAM  ·  MELCHER  ·  ROB    /    SV DIEMEN JO16-3",540,1337);
+    ctx.fillText(team==="JO16-3"?"SIAM  ·  MELCHER  ·  ROB    /    SV DIEMEN "+team:"FOOTBALLFORGE    /    SV DIEMEN "+team,540,1337);
     ctx.textAlign="start";
     return canvas;
   }
