@@ -25,7 +25,7 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - Training dinsdag/donderdag en blessurestatus
 - Wedstrijden en wedstrijd-aanwezigheid
 - 4-3-3 met twee controlerende middenvelders
-- Volledige wisselrondes na 20 minuten eerste helft, rust en 20 minuten tweede helft
+- Volledige wisselrondes na 20 minuten eerste helft, rust en 20 minuten tweede helft; JO16 speelt 2×40 minuten, JO14 speelt 2×35 minuten
 - Officials en speelminuten
 - WhatsApp-ouderbericht met Google Maps-route
 - Downloadbare PNG-wedstrijdposter met logo's, weer, veld en officials
