@@ -185,7 +185,7 @@ async function copyMessage(){const msg=makeMessage();if(!msg)return alert('Gener
 function finishMatch(){const g=s.generated;if(!g)return alert('Geen opstelling.');if(s.history.some(h=>h.date===g.date&&h.opponent===g.opponent))return alert('Deze wedstrijd is al geregistreerd.');if(!confirm('Wedstrijd afronden en speelminuten toevoegen aan de historie?'))return;for(const [id,min] of Object.entries(g.minutes)){const p=byId(id);if(p)p.minutes+=min}for(const id of Object.values(g.lineup)){let p=byId(id);if(p)p.starts++}s.history.unshift({date:g.date,opponent:g.opponent,minutes:g.minutes,linesman:g.linesman,referee:g.referee});if(s.match.linesmanList.trim())s.match.linesmanIndex++;if(s.match.home==='home'&&s.match.refereeList.trim())s.match.refereeIndex++;s.generated=null;save();render();tab('history')}
 function renderHistory(){document.getElementById('historyList').innerHTML=s.history.length?s.history.map(h=>'<div class="slot"><strong>'+esc(h.date)+' · '+esc(h.opponent)+'</strong><div class="muted">Grensrechter: '+esc(h.linesman)+' | Scheidsrechter: '+esc(h.referee)+'</div></div>').join(''):'<div class="empty">Nog geen afgeronde wedstrijden.</div>'}
 function exportData(){const blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='footballforge-'+TEAM_ID+'-backup.json';a.click();URL.revokeObjectURL(url)}
-async function importData(e){const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.players)||!data.match||!data.att)throw Error('Ongeldige back-up');if(!confirm('Huidige gegevens vervangen door back-up?'))return;s=data;s.teamName=TEAM_NAME;if(!Array.isArray(s.fixtures))s.fixtures=FIXTURES.map(f=>({...f,meeting:'',field:''}));save();render()}catch(err){alert('Importeren mislukt: '+err.message)}}
+async function importData(e){const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.players)||!data.match||!data.att)throw Error('Ongeldige back-up');if(data.teamName&&data.teamName!==TEAM_NAME)throw Error('Deze back-up hoort bij '+data.teamName+', niet bij '+TEAM_NAME);if(!confirm('Huidige gegevens vervangen door back-up?'))return;s={...data,footballforgeTeams:undefined};s.teamName=TEAM_NAME;if(!Array.isArray(s.fixtures))s.fixtures=FIXTURES.map(f=>({...f,meeting:'',field:''}));save();render()}catch(err){alert('Importeren mislukt: '+err.message)}}
 function saveAndRender(){save();render()}
 function render(){renderFixtures();renderRoster();renderAttendance();renderMatchForm();renderStats();renderGenerated();renderHistory()}
 
@@ -200,8 +200,11 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Grzkc4HIqZ1gN1sktI2glQ_s9DWLAVy';
 const CLOUD_ENDPOINT=SUPABASE_URL+'/rest/v1/jo163_app_state';
 const cloudHeaders={'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'};
 let cloudReady=false,cloudTimer=null,cloudBusy=false,cloudPending=false,cloudRevision=0,cloudLoading=false;
-const cloudMsg=m=>{const el=document.getElementById('cloudState');if(el)el.textContent=m};
-const cloudTeamData=(root)=>IS_JO163?root:root?.footballforgeTeams?.[TEAM_ID];
+const cloudMsg=m=>{const el=document.getElementById('cloudState');if(el)el.textContent=m;
+ const top=document.getElementById('headerConnection');
+ if(top){const online=m.startsWith('✓');top.textContent=online?'● SUPABASE VERBONDEN':m.includes('synchronis')||m.includes('delen met')?'● SYNCHRONISEREN':'● DATABASE STATUS';}
+};
+const cloudTeamData=(root)=>IS_JO163?({...root,footballforgeTeams:undefined}):root?.footballforgeTeams?.[TEAM_ID];
 const validTeamData=x=>Boolean(x&&Array.isArray(x.players)&&x.match&&x.att);
 async function cloudRequest(path='',options={}){
  const res=await fetch(CLOUD_ENDPOINT+path,{...options,headers:{...cloudHeaders,...(options.headers||{})}});
