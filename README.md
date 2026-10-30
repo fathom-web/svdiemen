@@ -27,6 +27,7 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - 4-3-3 met twee controlerende middenvelders
 - Volledige wisselrondes na 20 minuten eerste helft, rust en 20 minuten tweede helft; JO16 speelt 2×40 minuten, JO14 speelt 2×35 minuten
 - Vier visuele veldopstellingen per wedstrijd: start, 20 minuten 1e helft, rust en 20 minuten 2e helft
+- **Download PDF · 4 pagina’s** op het wedstrijdscherm: één A4-pagina per veldopstelling met alle bijbehorende UIT → IN-wissels, datum, tegenstander en verzameltijd. Geen externe PDF-service.
 - Bij elk wisselmoment staan de namen van de uitgaande en inkomende spelers inclusief posities; de bestaande wisseltijdlijn blijft staan
 - Bij handmatig verwisselen van basisspelers worden de drie volgende veldplaatjes en de wisselteksten opnieuw berekend
 - Officials en speelminuten
@@ -38,6 +39,7 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - `index.html`: hoofdpagina, teamkeuze en toegangscode
 - `team.html`: teamdashboard, Supabase-synchronisatie
 - `lineup-engine.js`: opstellingen en wissels
+- `matchday-pdf.js`: lokale PDF-export van vier opstellingen en wisselregels
 - `parent-message.js`: wedstrijdberichten en posters
 - `club-logos.js`: clublogo's
 - `supabase-setup.sql`: oorspronkelijke databaseaanmaak
