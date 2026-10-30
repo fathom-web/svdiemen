@@ -482,7 +482,7 @@ saveTraining=function(){save();renderStats();document.getElementById('trainingSa
 renderStats=function(){
  document.getElementById('statPlayers').textContent=s.players.length;
  document.getElementById('statAvailable').textContent=s.players.filter(p=>!p.injured).length+' beschikbaar';
- const count=d=>s.players.filter(p=>!p.injured&&s.att[attendanceKey(p.id,d)]!=='no').length;
+ const count=d=>s.players.filter(p=>s.att[attendanceKey(p.id,d)]!=='no').length;
  document.getElementById('statTuesday').textContent=count('di')+'/'+s.players.length;
  document.getElementById('statThursday').textContent=count('do')+'/'+s.players.length;
  document.getElementById('statTraining').textContent='Vrijdag 11:00 · automatische opstelling';
