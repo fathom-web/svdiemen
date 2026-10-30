@@ -81,7 +81,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-users"/></svg> Selectie</div><strong id="statPlayers">16</strong><div class="stat-note" id="statAvailable">spelers</div></div>
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> Dinsdag</div><strong id="statTuesday">0/16</strong><div class="stat-note">training</div></div>
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> Donderdag</div><strong id="statThursday">0/16</strong><div class="stat-note">training</div></div>
-<div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-clock"/></svg> Deadline</div><strong style="font-size:24px">Vr 19:00</strong><div class="stat-note" id="statTraining">Training • vrijdag</div></div>
+<div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-clock"/></svg> Auto-opstelling</div><strong style="font-size:24px">Vr 11:00</strong><div class="stat-note" id="statTraining">Zaterdagwedstrijd · automatische selectie</div></div>
 </div></div>
 <div class="dashboard-bottom">
 <section class="module"><div class="row-title"><h2>Komende wedstrijden</h2><button class="mini-link" onclick="tab('match')">Bekijk programma →</button></div><div id="dashboardUpcoming"></div></section>
@@ -120,7 +120,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div class="heading"><div><span class="kicker">TERUGKIJKEN & LEREN</span><h1>Wedstrijdhistorie</h1><p>Speelminuten, officials en betrouwbare back-ups.</p></div></div>
 <div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div><h2 style="margin:24px 0 12px">Spelerstatistieken</h2><div id="playerStats"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Importeer back-up<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><h2 id="staffSectionTitle" style="margin-top:26px">Over de trainers</h2><img id="staffImage" src="./SV%20Diemen%20JO16-3%20Staff%20Badge.png" alt="Siam, Melcher en Rob — JO16-3 staf" style="display:block;width:min(230px,100%);border-radius:50%;margin:15px auto"></section></div>
 </section>
-<section id="cloudConnection" class="cloud-status" aria-live="polite"><span id="cloudState">Supabase-verbinding controleren…</span><div class="actions"><button class="btn secondary" onclick="loadShared()">Ververs gedeelde gegevens</button><button class="btn secondary" id="publishState" onclick="publishLocal()" hidden>Lokale gegevens publiceren</button></div></section>
+<section id="cloudConnection" class="cloud-status" aria-live="polite"><span id="cloudState">Supabase-verbinding controleren…</span><div class="actions"><button class="btn secondary" onclick="loadShared()">Ververs gedeelde gegevens</button><button class="btn secondary" onclick="testDatabaseSync()">Test database-sync</button><button class="btn secondary" id="publishState" onclick="publishLocal()" hidden>Lokale gegevens publiceren</button></div></section>
 <div class="notice" id="securityNote">FootballForge testversie · een gedeelde pincode is geen veilige login. Gebruik geen gevoelige persoonsgegevens.</div>
 <footer id="teamFooter">FootballForge · SV Diemen · 2026/2027</footer>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -314,6 +314,34 @@ async function publishLocal(){
  finally{cloudBusy=false}
 }
 async function checkCloud(){await loadShared()}
+/**
+ * User-driven actual round-trip test: write a harmless team-scoped sync marker
+ * through the same compare-and-swap API, fetch it back and verify unchanged
+ * team identities. No player fixtures or attendance values are fabricated.
+ */
+async function testDatabaseSync(){
+ if(cloudBusy||cloudLoading){cloudMsg('Er loopt al een synchronisatie. Probeer zo opnieuw.');return;}
+ if(!cloudReady){await loadShared();if(!cloudReady)return;}
+ cloudBusy=true;clearTimeout(cloudTimer);
+ const pendingBefore=cloudPending;
+ cloudPending=false;cloudRevision++;
+ const stamp='sync-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
+ const snapshot={...s,teamName:TEAM_NAME,syncCheck:{token:stamp,at:new Date().toISOString()}};
+ try{
+  cloudMsg('Database-sync testen: schrijven en teruglezen…');
+  await persistTeamSnapshot(snapshot);
+  const latest=await fetchCloudRow();
+  const saved=cloudTeamData(latest.data);
+  if(!saved||saved.syncCheck?.token!==stamp)throw Error('Schrijven lukte, maar teruglezen gaf een andere versie');
+  s=snapshot;localStorage.setItem(KEY,JSON.stringify(s));
+  cloudReady=true;cloudMsg('✓ '+TEAM_NAME+' · lezen én schrijven in Supabase geslaagd');
+ }catch(e){
+  cloudPending=true;cloudMsg('Database-test mislukt: '+e.message+' · lokale gegevens blijven bewaard');
+ }finally{
+  cloudBusy=false;
+  if(cloudPending||pendingBefore){cloudPending=true;clearTimeout(cloudTimer);cloudTimer=setTimeout(flushCloud,700)}
+ }
+}
 
 /* PREMIUM UI V3: visual renderers, no changes to stored JSON format */
 const icon=(name)=>'<svg class="ico"><use href="#ic-'+name+'"></use></svg>';
