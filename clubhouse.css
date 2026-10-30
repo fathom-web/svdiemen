@@ -183,3 +183,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 input::placeholder,textarea::placeholder{color:#92a096}
 @media(max-width:950px){.nav button{flex-direction:row;align-items:center}}
 @media(max-width:690px){.save-bar{bottom:8px}.toast{bottom:20px;right:12px}.nav button{flex-direction:row;gap:6px}.shell{padding-bottom:35px}}
+
+#training .row-title label{color:#486c50!important}#training .row-title label input{color:#223928;background:#fff;border-color:#d5e1d5}
