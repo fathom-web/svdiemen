@@ -71,6 +71,13 @@ Als de database niet reageert, blijft lokale opslag werken maar synchroniseert h
 
 De automatische opstellingen draaien **vrijdag vanaf 11:00 uur Europe/Amsterdam** met GitHub Actions en herhalingscontroles tijdens de late ochtend. Dit geldt voor alle drie de teams. De taak werkt alleen als er een zaterdagwedstrijd én minstens elf inzetbare spelers (inclusief keeper) zijn. Hij slaat teams zonder programma over en overschrijft bestaande opstellingen voor dezelfde wedstrijd niet. GitHub Actions kan vertraging hebben. Handmatig testen kan via **Actions → FootballForge – vrijdag 11:00 opstellingen → Run workflow → dry_run=true**. Sportlink/VoetbalAssist is nog niet gekoppeld.
 
+## Trainingsdagen per team
+- **JO16-2:** maandag, woensdag en vrijdag. Drie trainingsdagen zichtbaar op het trainingsscherm én op het dashboard.
+- **JO16-3 en JO14-3:** dinsdag en donderdag, ongewijzigd.
+- Iedere vaste speler staat standaard op **verwacht**; trainers melden alleen uitzonderingen als **afwezig**.
+- Afwezigheden blijven per week en per dag bewaard in Supabase met bestaande dagcodes (`ma`, `wo`, `vr`, `di`, `do`). Er wordt geen bestaande data gewist of omgezet.
+- De automatische opstellingsmotor rekent voor JO16-2 met maandag/woensdag/vrijdag en voor de andere teams met dinsdag/donderdag. Het automatische vrijdagmoment blijft 11:00 uur.
+
 ## JO16-2 inrichting – belangrijke aandachtspunten
 De bestaande JO16-2-spelers en het door de trainers ingevoerde wedstrijdprogramma worden **niet** door een migratie of seed vervangen. Spelers zonder positie blijven bestaan; vul hun posities in voordat je een zinvolle opstelling verwacht. Er moet minimaal één speler voorkeurpositie **1 (keeper)** hebben.
 
