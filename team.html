@@ -969,6 +969,15 @@ renderAvailability=function(){
 // Guests have a separate section under permanent players.
 const ffRenderRoster=renderRoster;
 renderRoster=function(){ffRenderRoster();renderGuestRoster();};
+const ffRenderHistory=renderHistory;
+renderHistory=function(){
+ ffRenderHistory();
+ if(TEAM_ID==='jo16-2'){
+   document.getElementById('historyList').innerHTML=s.history.length?s.history.map(item=>
+    '<div class="history-item"><strong>'+esc(formatDate(item.date))+' · '+esc(item.opponent)+'</strong><div class="muted" style="margin-top:6px">Wedstrijd afgerond · speelminuten vastgelegd</div></div>'
+   ).join(''):'<div class="empty">Nog geen afgeronde wedstrijden.</div>';
+ }
+};
 
 render();
 loadShared();
