@@ -229,3 +229,22 @@ body[data-team="jo16-2"] .ff-official-only{display:none!important}
 .ff-data-health p{line-height:1.6}
 .ff-data-health .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
 .ff-data-health .actions .btn{font-size:12px}
+
+/* Team-specific training calendar: JO16-2 has three sessions, other teams two. */
+body[data-team="jo16-2"] .grid4{grid-template-columns:repeat(5,minmax(0,1fr))}
+#training .att-row.ff-three-trainings{grid-template-columns:minmax(120px,1fr) repeat(3,minmax(0,auto));gap:10px}
+#training .ff-three-trainings .att-day{min-width:0}
+#training .ff-three-trainings .ff-att-switch button{font-size:11px}
+@media(max-width:1290px){
+ body[data-team="jo16-2"] .grid4{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:950px){
+ body[data-team="jo16-2"] .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ #training .att-row.ff-three-trainings{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px 8px}
+ #training .ff-three-trainings>.player-name{grid-column:1/-1;padding-bottom:3px}
+ #training .ff-three-trainings .ff-att-switch{display:grid;grid-template-columns:1fr;gap:3px}
+ #training .ff-three-trainings .ff-att-switch button{width:100%;min-width:0;padding:8px 3px;font-size:10px}
+ #training .ff-three-trainings .att-day small{font-size:9px;letter-spacing:0}
+}
