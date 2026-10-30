@@ -38,7 +38,9 @@
   }
   function training(state,p,week){
     const att=state.att||{};
-    return ['di','do'].reduce((sum,day)=>sum+(att[week+':'+day+':'+p.id]!=='no'?1:0),0);
+    // Training attendance is opt-out. JO16-2 trains three days; other teams two.
+    const days=state.teamName==='JO16-2'?['ma','wo','vr']:['di','do'];
+    return days.reduce((sum,day)=>sum+(att[week+':'+day+':'+p.id]!=='no'?1:0),0);
   }
   function unavailable(state,match,p){
     const status=(state.matchAvailability||{})[keyOf(match)]?.[p.id];
