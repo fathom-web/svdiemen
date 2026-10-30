@@ -208,7 +208,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 </section>
 <section id="history" class="pane">
 <div class="heading"><div><span class="kicker">TERUGKIJKEN & LEREN</span><h1>Wedstrijdhistorie</h1><p>Speelminuten, officials en betrouwbare back-ups.</p></div></div>
-<div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div><h2 style="margin:24px 0 12px">Spelerstatistieken</h2><div id="playerStats"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Importeer back-up<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><h2 id="staffSectionTitle" style="margin-top:26px">Over FootballForge</h2><p class="muted">Wedstrijdhistorie, speelminuten en back-ups van jouw eigen team. Je gegevens zijn gescheiden van de andere teams.</p></section></div>
+<div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div><h2 style="margin:24px 0 12px">Spelerstatistieken</h2><div id="playerStats"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Importeer back-up<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><div class="ff-data-health"><h3>Controleer jouw teamgegevens</h3><p id="ffDataSummary" class="muted">Controleer hoeveel spelers en wedstrijden er lokaal en in Supabase staan.</p><div class="actions"><button type="button" class="btn secondary" onclick="inspectTeamData()">Controleer gegevens</button><button type="button" class="btn secondary" id="recoverBrowserBtn" onclick="restoreLocalBackup()" hidden>Herstel browsergegevens</button><button type="button" class="btn secondary" id="useCloudBtn" onclick="acceptCloudData()" hidden>Gebruik cloudversie</button></div><p class="caption">Een herstelactie overschrijft de gedeelde database niet automatisch. Jij kiest zelf wanneer je gegevens publiceert.</p></div><h2 id="staffSectionTitle" style="margin-top:26px">Over FootballForge</h2><p class="muted">Wedstrijdhistorie, speelminuten en back-ups van jouw eigen team. Je gegevens zijn gescheiden van de andere teams.</p></section></div>
 </section>
 <section id="cloudConnection" class="cloud-status" aria-live="polite"><span id="cloudState">Supabase-verbinding controleren…</span><div class="actions"><button class="btn secondary" onclick="loadShared()">Ververs gedeelde gegevens</button><button class="btn secondary" onclick="testDatabaseSync()">Test database-sync</button><button class="btn secondary" id="publishState" onclick="publishLocal()" hidden>Lokale gegevens publiceren</button></div></section>
 <div class="notice" id="securityNote">FootballForge testversie · een gedeelde pincode is geen veilige login. Gebruik geen gevoelige persoonsgegevens.</div>
@@ -241,7 +241,70 @@ if(!Array.isArray(s.fixtures))s.fixtures=[];for(const f of FIXTURES){if(!s.fixtu
 const OFFICIAL_REFEREES='Mika, Rivano, Danly, Rob/Melcher, Shashi';
 const OFFICIAL_LINESMEN='Aarav, Meron, Samuel, Jeffrey, Kaua, Yusuf, Noah';
 if(IS_JO163&&(!s.officialsVersion||!s.match.linesmanList?.trim()||!s.match.refereeList?.trim())){if(!s.match.refereeList?.trim())s.match.refereeList=OFFICIAL_REFEREES;if(!s.match.linesmanList?.trim())s.match.linesmanList=OFFICIAL_LINESMEN;s.match.refereeIndex=s.match.refereeIndex||0;s.match.linesmanIndex=s.match.linesmanIndex||0;s.officialsVersion=2;s.generated=null;localStorage.setItem(KEY,JSON.stringify(s));}
-const save=()=>{localStorage.setItem(KEY,JSON.stringify(s));if(cloudReady)queueCloudSave();};
+// Keep a separate local copy of nonempty team content before cloud reads replace state.
+const RECOVERY_KEY='footballforge-recovery-'+TEAM_ID;
+function dataCounts(data){return {
+ players:Array.isArray(data?.players)?data.players.length:0,
+ fixtures:Array.isArray(data?.fixtures)?data.fixtures.length:0,
+ guests:Array.isArray(data?.guestPlayers)?data.guestPlayers.length:0,
+ history:Array.isArray(data?.history)?data.history.length:0
+}}
+function dataScore(data){const n=dataCounts(data);return n.players*4+n.fixtures*6+n.guests*3+n.history*8}
+function localSavedState(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch{return null}}
+function recoveryState(){try{return JSON.parse(localStorage.getItem(RECOVERY_KEY)||'null')?.state||null}catch{return null}}
+function captureRecovery(data,origin){
+ if(!data||dataScore(data)<=0)return;
+ const existing=recoveryState();
+ if(existing&&dataScore(existing)>=dataScore(data))return;
+ try{localStorage.setItem(RECOVERY_KEY,JSON.stringify({state:data,origin,savedAt:new Date().toISOString()}))}catch{}
+}
+function displayDataSummary(cloud){
+ const el=document.getElementById('ffDataSummary');if(!el)return;
+ const local=dataCounts(s),remote=dataCounts(cloud),backup=dataCounts(recoveryState());
+ el.textContent='Browser: '+local.players+' spelers, '+local.fixtures+' wedstrijden. Supabase: '+
+ remote.players+' spelers, '+remote.fixtures+' wedstrijden. Herstelpunt: '+
+ backup.players+' spelers, '+backup.fixtures+' wedstrijden.';
+ const restore=document.getElementById('recoverBrowserBtn'),use=document.getElementById('useCloudBtn');
+ if(restore)restore.hidden=dataScore(recoveryState())<=dataScore(s);
+ if(use)use.hidden=!(dataScore(s)>dataScore(cloud)&&cloud&&Array.isArray(cloud.players));
+}
+async function inspectTeamData(){
+ const local=localSavedState();if(local)captureRecovery(local,'browsercontrole');
+ try{
+  const row=await fetchCloudRow(),cloud=cloudTeamData(row.data);
+  displayDataSummary(cloud);
+  if(dataScore(cloud)===0&&dataScore(s)===0&&dataScore(recoveryState())===0)
+   cloudMsg('Geen spelers of wedstrijden gevonden in de huidige teamopslag. Controleer een eerdere JSON-back-up.');
+ }catch(e){displayDataSummary(null);cloudMsg('Database uitlezen mislukt: '+e.message)}
+}
+function restoreLocalBackup(){
+ const backup=recoveryState();
+ if(!backup||dataScore(backup)===0)return;
+ if(!confirm('De lokale herstelkopie van '+TEAM_NAME+' openen? Dit schrijft nog niets naar Supabase.'))return;
+ captureRecovery(s,'voor herstel');
+ s={...backup,teamName:TEAM_NAME};
+ localStorage.setItem(KEY,JSON.stringify(s));
+ cloudReady=false;
+ document.getElementById('publishState').hidden=false;
+ render();displayDataSummary(null);
+ cloudMsg('Browsergegevens hersteld. Controleer Spelers en Wedstrijd en kies daarna Lokale gegevens publiceren.');
+}
+async function acceptCloudData(){
+ if(!confirm('De cloudversie gebruiken? De browsergegevens worden in het lokale herstelpunt bewaard.'))return;
+ try{
+  const row=await fetchCloudRow(),remote=cloudTeamData(row.data);
+  if(!validTeamData(remote))throw Error('Geen geldige gedeelde teamgegevens gevonden');
+  captureRecovery(s,'voor cloudversie');
+  s={...remote,teamName:TEAM_NAME};
+  localStorage.setItem(KEY,JSON.stringify(s));
+  cloudReady=true;
+  document.getElementById('publishState').hidden=true;
+  render();displayDataSummary(remote);
+  cloudMsg('✓ Cloudversie geladen, browserherstelpunt bewaard');
+ }catch(e){cloudMsg('Cloudversie laden mislukt: '+e.message)}
+}
+captureRecovery(s,'bestaande browsergegevens');
+const save=()=>{captureRecovery(s,'lokaal opgeslagen');localStorage.setItem(KEY,JSON.stringify(s));if(cloudReady)queueCloudSave();};
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const byId=id=>s.players.find(p=>p.id===id)||(s.guestPlayers||[]).find(p=>p.id===id);
 const opt=(v)=>POS.map(p=>'<option '+(p===v?'selected':'')+'>'+p+'</option>').join('');
@@ -362,35 +425,56 @@ async function loadShared(){
  if(cloudBusy||cloudPending){cloudMsg('Wacht tot jouw wijzigingen zijn gesynchroniseerd');return}
  cloudLoading=true;
  try{
-  const row=await fetchCloudRow();
-  const teamData=cloudTeamData(row.data);
+  const row=await fetchCloudRow(),teamData=cloudTeamData(row.data);
+  const local=localSavedState()||s;
+  captureRecovery(local,'voor synchronisatie');
+  const localScore=dataScore(local),remoteScore=dataScore(teamData);
   if(!validTeamData(teamData)){
+    if(localScore>0){
+      cloudReady=false;
+      document.getElementById('publishState').hidden=false;
+      displayDataSummary(null);
+      cloudMsg(TEAM_NAME+': gedeelde gegevens ontbreken, lokale spelers en wedstrijden behouden. Publiceer ze pas na controle.');
+      return;
+    }
     if(IS_JO163){
       cloudReady=false;
       document.getElementById('publishState').hidden=false;
       cloudMsg('JO16-3 nog niet gedeeld · publiceer bestaande lokale gegevens eenmalig');
+      displayDataSummary(null);
       return;
     }
-    // First access to a new team creates an empty shared team (or migrates existing local work).
+    // Brand-new empty team only: create the shared document without replacing existing input.
     const seed={...s,teamName:TEAM_NAME,fixtures:Array.isArray(s.fixtures)?s.fixtures:[]};
     await persistTeamSnapshot(seed);
-    cloudReady=true;
+    cloudReady=true;document.getElementById('publishState').hidden=true;
     cloudMsg('✓ '+TEAM_NAME+' aangemaakt en verbonden met Supabase');
-    document.getElementById('publishState').hidden=true;
+    displayDataSummary(seed);
+    return;
+  }
+  // Never silently replace a richer local roster or program with fewer cloud records.
+  if(localScore>remoteScore){
+    cloudReady=false;
+    document.getElementById('publishState').hidden=false;
+    displayDataSummary(teamData);
+    cloudMsg('Let op: lokale gegevens bevatten meer spelers/wedstrijden dan Supabase. Browsergegevens behouden. Controleer onder Historie.');
     return;
   }
   s={...teamData,teamName:TEAM_NAME};
   if(!Array.isArray(s.fixtures))s.fixtures=[];
   if(IS_JO163)for(const f of FIXTURES)if(!s.fixtures.some(x=>x.date===f.date&&x.opponent===f.opponent))s.fixtures.push({...f,meeting:'',field:''});
   localStorage.setItem(KEY,JSON.stringify(s));
+  captureRecovery(s,'gedeelde gegevens');
   cloudReady=true;
   document.getElementById('publishState').hidden=true;
   render();
+  displayDataSummary(s);
   cloudMsg('✓ '+TEAM_NAME+' · gedeelde database verbonden');
  }catch(e){
   cloudReady=false;
   document.getElementById('publishState').hidden=false;
-  cloudMsg('Supabase niet beschikbaar: '+e.message+' · lokaal opgeslagen');
+  displayDataSummary(null);
+  cloudMsg('Supabase niet beschikbaar: '+e.message+' · lokale gegevens behouden');
  }finally{cloudLoading=false}
 }
 async function publishLocal(){
