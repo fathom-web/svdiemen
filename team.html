@@ -966,6 +966,13 @@ renderAvailability=function(){
  document.getElementById('matchAvailabilityCount').textContent=(fixed+guests)+' inzetbaar'+(guests?' · '+guests+' gast':'');
  renderGuestMatchPicker();
 };
+// Use the same shared rotation engine after manual lineup drag/drop, including guests.
+regenerateSubsFromLineup=function(g){
+ const roster=getMatchPlayers(s.match);
+ const available=roster.filter(p=>!JO163Engine.unavailable(s,s.match,p));
+ const updated=JO163Engine.calculateRotations({...s,players:roster},s.match,g.lineup,available);
+ Object.assign(g,updated);
+};
 // Guests have a separate section under permanent players.
 const ffRenderRoster=renderRoster;
 renderRoster=function(){ffRenderRoster();renderGuestRoster();};
