@@ -208,7 +208,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 </section>
 <section id="history" class="pane">
 <div class="heading"><div><span class="kicker">TERUGKIJKEN & LEREN</span><h1>Wedstrijdhistorie</h1><p>Speelminuten, officials en betrouwbare back-ups.</p></div></div>
-<div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div><h2 style="margin:24px 0 12px">Spelerstatistieken</h2><div id="playerStats"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Importeer back-up<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><div class="ff-data-health"><h3>Controleer jouw teamgegevens</h3><p id="ffDataSummary" class="muted">Controleer hoeveel spelers en wedstrijden er lokaal en in Supabase staan.</p><div class="actions"><button type="button" class="btn secondary" onclick="inspectTeamData()">Controleer gegevens</button><button type="button" class="btn secondary" id="recoverBrowserBtn" onclick="restoreLocalBackup()" hidden>Herstel browsergegevens</button><button type="button" class="btn secondary" id="useCloudBtn" onclick="acceptCloudData()" hidden>Gebruik cloudversie</button></div><p class="caption">Een herstelactie overschrijft de gedeelde database niet automatisch. Jij kiest zelf wanneer je gegevens publiceert.</p></div><h2 id="staffSectionTitle" style="margin-top:26px">Over FootballForge</h2><p class="muted">Wedstrijdhistorie, speelminuten en back-ups van jouw eigen team. Je gegevens zijn gescheiden van de andere teams.</p></section></div>
+<div class="two-col"><section class="module"><h2>Gespeelde wedstrijden</h2><div id="historyList"></div><h2 style="margin:24px 0 12px">Spelerstatistieken</h2><div id="playerStats"></div></section><section class="module"><h2>Gegevens veiligstellen</h2><p class="muted">De Supabase-testdatabase is openbaar toegankelijk. Maak geregeld een reservekopie van je gegevens.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON-back-up</button><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center">Voeg spelers/programma toe<input type="file" accept=".json,application/json" onchange="mergeDataImport(event)" style="display:none"></label><label class="btn secondary" style="display:inline-flex;cursor:pointer;align-items:center" title="Vervangt alle gegevens van dit team">Volledige back-up terugzetten<input type="file" accept=".json,application/json" onchange="importData(event)" style="display:none"></label></div><div class="ff-data-health"><h3>Controleer jouw teamgegevens</h3><p id="ffDataSummary" class="muted">Controleer hoeveel spelers en wedstrijden er lokaal en in Supabase staan.</p><div class="actions"><button type="button" class="btn secondary" onclick="inspectTeamData()">Controleer gegevens</button><button type="button" class="btn secondary" id="recoverBrowserBtn" onclick="restoreLocalBackup()" hidden>Herstel browsergegevens</button><button type="button" class="btn secondary" id="useCloudBtn" onclick="acceptCloudData()" hidden>Gebruik cloudversie</button></div><p class="caption">Een herstelactie overschrijft de gedeelde database niet automatisch. Jij kiest zelf wanneer je gegevens publiceert.</p></div><h2 id="staffSectionTitle" style="margin-top:26px">Over FootballForge</h2><p class="muted">Wedstrijdhistorie, speelminuten en back-ups van jouw eigen team. Je gegevens zijn gescheiden van de andere teams.</p></section></div>
 </section>
 <section id="cloudConnection" class="cloud-status" aria-live="polite"><span id="cloudState">Supabase-verbinding controleren…</span><div class="actions"><button class="btn secondary" onclick="loadShared()">Ververs gedeelde gegevens</button><button class="btn secondary" onclick="testDatabaseSync()">Test database-sync</button><button class="btn secondary" id="publishState" onclick="publishLocal()" hidden>Lokale gegevens publiceren</button></div></section>
 <div class="notice" id="securityNote">FootballForge testversie · een gedeelde pincode is geen veilige login. Gebruik geen gevoelige persoonsgegevens.</div>
@@ -276,6 +276,36 @@ async function inspectTeamData(){
   if(dataScore(cloud)===0&&dataScore(s)===0&&dataScore(recoveryState())===0)
    cloudMsg('Geen spelers of wedstrijden gevonden in de huidige teamopslag. Controleer een eerdere JSON-back-up.');
  }catch(e){displayDataSummary(null);cloudMsg('Database uitlezen mislukt: '+e.message)}
+}
+async function mergeDataImport(event){
+ const file=event.target.files?.[0];if(!file)return;
+ try{
+  const incoming=JSON.parse(await file.text());
+  if(incoming.teamName&&incoming.teamName!==TEAM_NAME)throw Error('Dit bestand hoort bij '+incoming.teamName);
+  if(!Array.isArray(incoming.players)||!Array.isArray(incoming.fixtures))throw Error('Verwacht spelers en wedstrijden in het JSON-bestand');
+  const normalize=str=>String(str||'').trim().toLocaleLowerCase('nl-NL').replace(/\s+/g,' ');
+  const present=new Set((s.players||[]).map(p=>normalize(p.name)));
+  const additionalPlayers=incoming.players.filter(p=>p&&normalize(p.name)&&!present.has(normalize(p.name)));
+  const games=new Set((s.fixtures||[]).map(f=>f.date+'|'+normalize(f.opponent)));
+  const additionalFixtures=incoming.fixtures.filter(f=>f&&/^\d{4}-\d{2}-\d{2}$/.test(f.date||'')&&normalize(f.opponent)&&!games.has(f.date+'|'+normalize(f.opponent)));
+  if(!additionalPlayers.length&&!additionalFixtures.length){showToast('Geen nieuwe spelers of wedstrijden gevonden');return}
+  if(!confirm('Voeg '+additionalPlayers.length+' spelers en '+additionalFixtures.length+' wedstrijden toe aan '+TEAM_NAME+'? Bestaande gegevens blijven behouden.'))return;
+  captureRecovery(s,'voor aanvullend importeren');
+  const ids=new Set((s.players||[]).map(p=>p.id));
+  for(let i=0;i<additionalPlayers.length;i++){
+   const p=additionalPlayers[i];
+   let id=String(p.id||'');if(!id||ids.has(id))id='imp-'+Date.now()+'-'+i;
+   ids.add(id);
+   s.players.push({id,name:String(p.name).trim(),number:p.number??'',
+     preferences:Array.isArray(p.preferences)?p.preferences:[],primary:p.primary||'',
+     secondary:p.secondary||'',injured:false,minutes:0,starts:0});
+  }
+  s.fixtures||=[];s.fixtures.push(...additionalFixtures.map(f=>({...f})));
+  s.fixtures.sort((a,b)=>a.date.localeCompare(b.date));
+  save();render();
+  showToast('Toegevoegd: '+additionalPlayers.length+' spelers en '+additionalFixtures.length+' wedstrijden');
+ }catch(e){showToast('Importeren mislukt: '+e.message)}
+ finally{event.target.value=''}
 }
 function restoreLocalBackup(){
  const backup=recoveryState();
