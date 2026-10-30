@@ -116,13 +116,14 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 </section>
 <div class="grid4">
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-users"/></svg> Selectie</div><strong id="statPlayers">16</strong><div class="stat-note" id="statAvailable">spelers</div></div>
-<div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> Dinsdag</div><strong id="statTuesday">0/16</strong><div class="stat-note">training</div></div>
-<div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> Donderdag</div><strong id="statThursday">0/16</strong><div class="stat-note">training</div></div>
+<div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> <span id="statDayOneLabel">Dinsdag</span></div><strong id="statTuesday">0/16</strong><div class="stat-note">training</div></div>
+<div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> <span id="statDayTwoLabel">Donderdag</span></div><strong id="statThursday">0/16</strong><div class="stat-note">training</div></div>
+<div class="statcard" id="statThirdSession" hidden><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> Vrijdag</div><strong id="statFriday">0/16</strong><div class="stat-note">training</div></div>
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-clock"/></svg> Auto-opstelling</div><strong style="font-size:24px">Vr 11:00</strong><div class="stat-note" id="statTraining">Zaterdagwedstrijd · automatische selectie</div></div>
 </div></div>
 <div class="ff-quick-grid" aria-label="Snelle acties">
  <button type="button" onclick="tab('match')"><span class="ff-quick-icon">⚽</span><span><strong>Opstelling & wissels</strong><small>Maak je wedstrijdplan</small></span><span class="ff-quick-arrow">↗</span></button>
- <button type="button" onclick="tab('training')"><span class="ff-quick-icon">✓</span><span><strong>Aanwezigheid</strong><small>Training op dinsdag en donderdag</small></span><span class="ff-quick-arrow">↗</span></button>
+ <button type="button" onclick="tab('training')"><span class="ff-quick-icon">✓</span><span><strong>Aanwezigheid</strong><small id="trainingShortcutDescription">Training op dinsdag en donderdag</small></span><span class="ff-quick-arrow">↗</span></button>
  <button type="button" onclick="tab('team')"><span class="ff-quick-icon">♟</span><span><strong>Spelersselectie</strong><small>Rugnummers en posities</small></span><span class="ff-quick-arrow">↗</span></button>
 </div>
 <div class="dashboard-bottom">
@@ -145,7 +146,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 </section>
 </section>
 <section id="training" class="pane">
-<div class="heading"><div><span class="kicker">DINSDAG & DONDERDAG</span><h1>Afwezigmeldingen</h1><p>Iedereen is standaard aanwezig. Meld alleen als iemand niet komt.</p></div></div>
+<div class="heading"><div><span class="kicker" id="trainingDaysHeading">DINSDAG & DONDERDAG</span><h1>Afwezigmeldingen</h1><p>Iedereen is standaard aanwezig. Meld alleen als iemand niet komt.</p></div></div>
 <section class="module"><div class="row-title"><label style="color:#b6d1f0;font-size:12px;max-width:210px">Week vanaf maandag<input type="date" id="weekDate" onchange="switchWeek()" style="margin-top:6px"></label><span class="count-pill" id="attendanceCount">Standaard aanwezig</span></div><p class="muted">Groen = verwacht op training. Tik op <strong>Afwezig</strong> als iemand zich afmeldt. Wijzigen gaat automatisch naar de gedeelde database.</p><div id="attendance"></div><div class="save-bar"><span id="trainingSaved" role="status" aria-live="polite">Aanwezigheid wordt automatisch opgeslagen</span><button class="btn compact iconbtn" onclick="saveTraining()"><svg class="ico"><use href="#ic-save"/></svg> Opslaan</button></div></section>
 </section>
 <section id="match" class="pane">
@@ -224,6 +225,8 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 const TEAM_ID=window.FF_TEAM_ID;
 const TEAM_NAME=window.FF_TEAM_NAME;
 const IS_JO163=TEAM_ID==='jo16-3';
+const TRAINING_DAYS=TEAM_ID==='jo16-2'?['ma','wo','vr']:['di','do'];
+const TRAINING_DAY_LABELS={ma:'Maandag',di:'Dinsdag',wo:'Woensdag',do:'Donderdag',vr:'Vrijdag'};
 const POS=['GK','LB','LCB','RCB','RB','LDM','RDM','CAM','LW','ST','RW'];
 const LINES=[['LW','ST','RW'],['CAM'],['LDM','RDM'],['LB','LCB','RCB','RB'],['GK']];
 const TEAM_SEED=[["David",["GK"]],["Jeffrey",["LB","RB"]],["Rivano",["RB","LB"]],["Ravi",["LCB","RCB"]],["Yusuf",["LCB","RCB"]],["Meron",["LCB","RCB"]],["Rayelthon",["RB","RDM"]],["Shayen",["RDM","LDM"]],["Mika",["RDM","LDM","CAM"]],["Shashi",["CAM","RDM","LDM"]],["Aarav",["RDM","LDM","CAM"]],["Dean",["LW","RW"]],["Samuel",["LW","RW"]],["Danly",["ST"]],["Kaua",["RB","LB","RW","LW"]],["Noah",["RW","LW","ST"]]];
@@ -358,7 +361,7 @@ function meetingBefore(kickoff){if(!/^\d{2}:\d{2}$/.test(kickoff||''))return '';
 function selectFixture(date){const f=s.fixtures.find(x=>x.date===date);if(!f)return;if(s.generated&&(s.generated.date!==f.date||s.generated.opponent!==f.opponent)&&!confirm('De huidige opstelling verbergen en deze wedstrijd selecteren?'))return;s.match={...s.match,...f,meeting:meetingBefore(f.kickoff),field:f.field||'',parentNote:f.parentNote||''};if(s.generated&&(s.generated.date!==f.date||s.generated.opponent!==f.opponent))s.generated=null;s.week=monday(f.date);save();render();tab('match');document.getElementById('matchDate').value=f.date;document.getElementById('kickoff').value=f.kickoff}
 function saveMatch(){const previousKickoff=s.match.kickoff;for(const k of ['opponent','date','kickoff','meeting','venue','field','home','linesmanList','refereeList','parentNote'])s.match[k]=document.getElementById(k==='date'?'matchDate':k).value;if(s.match.kickoff!==previousKickoff){s.match.meeting=meetingBefore(s.match.kickoff);document.getElementById('meeting').value=s.match.meeting;}const i=s.fixtures.findIndex(f=>f.date===s.match.date&&f.opponent===s.match.opponent);if(i>=0){const f=s.fixtures[i];for(const k of ['kickoff','meeting','venue','field','home','parentNote'])f[k]=s.match[k];}save();renderStats();renderFixtures()}
 function renderMatchForm(){if(s.match.kickoff&&!s.match.meeting)s.match.meeting=meetingBefore(s.match.kickoff);for(const k of ['opponent','date','kickoff','meeting','venue','field','home','linesmanList','refereeList','parentNote'])document.getElementById(k==='date'?'matchDate':k).value=s.match[k]||''}
-const training=p=>['di','do'].filter(d=>s.att[attendanceKey(p.id,d)]==='yes').length;
+const training=p=>TRAINING_DAYS.filter(d=>s.att[attendanceKey(p.id,d)]!=='no').length;
 const suitability=(p,pos)=>{const prefs=p.preferences||[p.primary,p.secondary].filter(Boolean);if(pos==='GK')return prefs[0]==='GK'?160:-10000;if(prefs[0]==='GK')return -10000;const at=prefs.indexOf(pos);if(at>=0){if(['LCB','RCB'].includes(pos)&&prefs.includes('LCB')&&prefs.includes('RCB'))return 120;return Math.max(30,120-at*24)}return -160};
 function rank(p,pos,played){return suitability(p,pos)+training(p)*35-Math.min(60,p.minutes/6)-p.starts*3-(played.get(p.id)||0)*.4}
 function choose(candidates,pos,played){return [...candidates].sort((a,b)=>rank(b,pos,played)-rank(a,pos,played))[0]}
@@ -659,8 +662,15 @@ renderStats=function(){
  document.getElementById('statPlayers').textContent=s.players.length;
  document.getElementById('statAvailable').textContent=s.players.filter(p=>!p.injured).length+' beschikbaar';
  const count=d=>s.players.filter(p=>s.att[attendanceKey(p.id,d)]!=='no').length;
- document.getElementById('statTuesday').textContent=count('di')+'/'+s.players.length;
- document.getElementById('statThursday').textContent=count('do')+'/'+s.players.length;
+ const first=TRAINING_DAYS[0],second=TRAINING_DAYS[1],third=TRAINING_DAYS[2];
+ document.getElementById('statDayOneLabel').textContent=TRAINING_DAY_LABELS[first];
+ document.getElementById('statDayTwoLabel').textContent=TRAINING_DAY_LABELS[second];
+ document.getElementById('statTuesday').textContent=count(first)+'/'+s.players.length;
+ document.getElementById('statThursday').textContent=count(second)+'/'+s.players.length;
+ document.getElementById('statThirdSession').hidden=!third;
+ if(third)document.getElementById('statFriday').textContent=count(third)+'/'+s.players.length;
+ document.getElementById('trainingDaysHeading').textContent=TRAINING_DAYS.map(day=>TRAINING_DAY_LABELS[day].toUpperCase()).join(' · ');
+ document.getElementById('trainingShortcutDescription').textContent='Training: '+TRAINING_DAYS.map(day=>TRAINING_DAY_LABELS[day].toLowerCase()).join(', ');
  document.getElementById('statTraining').textContent='Vrijdag 11:00 · automatische opstelling';
  renderOverview();
 };
@@ -1109,13 +1119,14 @@ renderAttendance=function(){
  document.getElementById('attendance').innerHTML=s.players.map(p=>{
    const group=day=>{
      const absent=isAway(p.id,day);if(absent)away++;
-     return '<div class="att-day"><small>'+(day==='di'?'DINSDAG':'DONDERDAG')+'</small><div class="segment ff-att-switch" role="group" aria-label="Aanwezigheid '+esc(p.name)+' '+day+'">'
+     return '<div class="att-day"><small>'+TRAINING_DAY_LABELS[day].toUpperCase()+'</small><div class="segment ff-att-switch" role="group" aria-label="Aanwezigheid '+esc(p.name)+' '+day+'">'
       +'<button type="button" class="'+(!absent?'selected':'')+'" aria-pressed="'+(!absent)+'" onclick="setAttendance(\''+p.id+'\',\''+day+'\',\'\')">✓ Verwacht</button>'
       +'<button type="button" class="no '+(absent?'selected':'')+'" aria-pressed="'+absent+'" onclick="setAttendance(\''+p.id+'\',\''+day+'\',\'no\')">✕ Afwezig</button></div></div>';
    };
-   return '<div class="att-row '+(p.injured?'is-injured':'')+'"><div class="player-name"><div class="avatar">'+esc(p.number||positionNumber[p.primary]||'–')+'</div><div><strong>'+esc(p.name)+'</strong>'+(p.injured?'<div class="injury">Geblesseerd</div>':'')+'</div></div>'+group('di')+group('do')+'</div>';
+   return '<div class="att-row '+(p.injured?'is-injured':'')+(TRAINING_DAYS.length===3?' ff-three-trainings':'')+'"><div class="player-name"><div class="avatar">'+esc(p.number||positionNumber[p.primary]||'–')+'</div><div><strong>'+esc(p.name)+'</strong>'+(p.injured?'<div class="injury">Geblesseerd</div>':'')+'</div></div>'+TRAINING_DAYS.map(group).join('')+'</div>';
  }).join('');
- document.getElementById('attendanceCount').textContent=away+' afwezig gemeld · '+(s.players.length*2-away)+' standaard verwacht';
+ const sessions=s.players.length*TRAINING_DAYS.length;
+ document.getElementById('attendanceCount').textContent=away+' afwezig gemeld · '+(sessions-away)+' standaard verwacht';
 };
 setAttendance=function(id,day,value){
  const key=attendanceKey(id,day);
