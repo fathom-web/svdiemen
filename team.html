@@ -217,6 +217,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 </div>
 <script src="./club-logos.js"></script>
 <script src="./parent-message.js"></script>
+<script src="./jo16-2-recovery.js"></script>
 <script src="./lineup-engine.js"></script>
 <script src="./matchday-pdf.js"></script>
 <script>
@@ -411,6 +412,64 @@ function mergeTeamIntoRoot(root,snapshot){
  }
  return result;
 }
+/* One-time, append-only recovery from the JO16-2 screenshots.
+   Read the current cloud row BEFORE each attempt and keep all original team fields.
+   Marker prevents re-adding names or matches a trainer later removes.
+*/
+function mergeJO162Screenshots(current,oldBrowser){
+ const sample=window.FF_JO162_SNAPSHOT;
+ if(!sample||!Array.isArray(sample.players)||!Array.isArray(sample.fixtures))throw Error('JO16-2-herstelgegevens niet geladen');
+ const remote=validTeamData(current)?current:initial();
+ const out={...remote,teamName:'JO16-2'};
+ out.players=[...(remote.players||[])];
+ out.fixtures=[...(remote.fixtures||[])];
+ const clean=n=>String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+ const knownPlayers=new Set(out.players.map(p=>clean(p.name)));
+ const knownGames=new Set(out.fixtures.map(f=>f.date+'|'+clean(f.opponent)));
+ function appendSource(source){
+  if(!source)return;
+  for(const p of (source.players||[])){
+   const name=clean(p.name);
+   if(!name||knownPlayers.has(name))continue;
+   const uniqueId=out.players.some(x=>x.id===p.id)?'recovered-'+Date.now()+'-'+out.players.length:p.id;
+   out.players.push({...p,id:uniqueId});knownPlayers.add(name);
+  }
+  for(const f of (source.fixtures||[])){
+   const key=f.date+'|'+clean(f.opponent);
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(f.date||'')||!clean(f.opponent)||knownGames.has(key))continue;
+   out.fixtures.push({...f});knownGames.add(key);
+  }
+ }
+ // Local input gets priority over the screenshot recovery when the cloud is empty.
+ if(dataScore(remote)===0&&oldBrowser&&dataScore(oldBrowser)>0){
+   for(const k of ['att','guestPlayers','matchGuestIds','matchAvailability','history','generated','week','clubLogos']){
+     if(oldBrowser[k]!=null&&out[k]==null)out[k]=oldBrowser[k];
+   }
+   if(!out.match?.date&&oldBrowser.match?.date)out.match={...oldBrowser.match};
+ }
+ appendSource(oldBrowser);
+ appendSource(sample);
+ out.fixtures.sort((a,b)=>a.date.localeCompare(b.date));
+ out.jo162ScreenshotSeedVersion=1;
+ return out;
+}
+async function bootstrapJO162Screenshots(){
+ if(TEAM_ID!=='jo16-2'||!window.FF_JO162_SNAPSHOT)return;
+ for(let attempt=0;attempt<5;attempt++){
+  const row=await fetchCloudRow(),remote=cloudTeamData(row.data);
+  if(remote?.jo162ScreenshotSeedVersion>=1)return;
+  const local=localSavedState()||s;
+  captureRecovery(local,'voor automatisch JO16-2-herstel');
+  const prepared=mergeJO162Screenshots(remote,local);
+  const next=mergeTeamIntoRoot(row.data||{},prepared);
+  const saved=await cloudRequest('?id=eq.1&updated_at=eq.'+encodeURIComponent(row.updated_at),{
+   method:'PATCH',headers:{Prefer:'return=representation'},
+   body:JSON.stringify({data:next,updated_at:new Date().toISOString()})
+  });
+  if(saved.length===1)return;
+ }
+ throw Error('JO16-2-herstel kon niet worden opgeslagen vanwege gelijktijdige wijzigingen');
+}
 async function persistTeamSnapshot(snapshot){
  for(let attempt=0;attempt<5;attempt++){
   const row=await fetchCloudRow();
@@ -455,6 +514,9 @@ async function loadShared(){
  if(cloudBusy||cloudPending){cloudMsg('Wacht tot jouw wijzigingen zijn gesynchroniseerd');return}
  cloudLoading=true;
  try{
+  if(TEAM_ID==='jo16-2'&&window.FF_JO162_SNAPSHOT){
+    await bootstrapJO162Screenshots();
+  }
   const row=await fetchCloudRow(),teamData=cloudTeamData(row.data);
   const local=localSavedState()||s;
   captureRecovery(local,'voor synchronisatie');
