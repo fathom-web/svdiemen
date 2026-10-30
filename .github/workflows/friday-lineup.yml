@@ -1,10 +1,13 @@
-name: JO16-3 Friday lineup
+name: FootballForge – vrijdag 11:00 opstellingen
 
 on:
   schedule:
-    # Check repeatedly during Friday evening, accounting for EU summer/winter time.
-    # Runs are best effort; GitHub Actions is not a precise 19:00 scheduler.
-    - cron: '7,22,37,52 17,18 * * 5'
+    # Amsterdam local time: works through summer and winter time.
+    # At 11:00 and retries throughout late morning; existing plans are untouched.
+    - cron: '0,15,30,45 11 * * 5'
+      timezone: 'Europe/Amsterdam'
+    - cron: '0,15 12 * * 5'
+      timezone: 'Europe/Amsterdam'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -17,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: jo163-friday-lineup
+  group: footballforge-friday-lineup
   cancel-in-progress: false
 
 jobs:
@@ -27,10 +30,9 @@ jobs:
     steps:
       - name: Checkout app
         uses: actions/checkout@v4
-      - name: Generate next Saturday lineup
+      - name: Generate Saturday match plans for all three teams
         env:
           SUPABASE_URL: https://pfvahwhoyicnzwnwspaf.supabase.co
-          # This is a PUBLIC, RLS-restricted client key already used by GitHub Pages.
           SUPABASE_PUBLISHABLE_KEY: sb_publishable_Grzkc4HIqZ1gN1sktI2glQ_s9DWLAVy
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: node scripts/friday-lineup.cjs
