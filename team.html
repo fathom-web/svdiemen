@@ -5,7 +5,8 @@
 (function(){
  const allowed={'jo16-3':'JO16-3','jo16-2':'JO16-2','jo14-3':'JO14-3'};
  const id=new URLSearchParams(location.search).get('team');
- if(!allowed[id]||!sessionStorage.getItem('footballforge-access-'+id)){
+ const expected=id==='jo16-2'?'2222':'1111';
+ if(!allowed[id]||sessionStorage.getItem('footballforge-access-'+id)!==expected){
    location.replace('./index.html');
    throw new Error('Teamtoegang vereist');
  }
