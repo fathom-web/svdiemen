@@ -13,7 +13,7 @@ FootballForge is de teammanager voor **JO16-3, JO16-2 en JO14-3** op GitHub Page
 - Fotografie is decoratief, gebruikt publieke Unsplash-afbeeldingen en heeft een groene achtergrondkleur als fallback.
 
 ## Starten
-Open https://fathom-web.github.io/svdiemen/, klik een team en voer code **1111** in. Daarna verschijnt het eigen dashboard. De knop **← Teams** gaat terug naar de startpagina.
+Open https://fathom-web.github.io/svdiemen/ en kies een team. **JO16-2 heeft code 2222**; JO16-3 en JO14-3 houden code **1111**. Daarna verschijnt het eigen dashboard. De knop **← Teams** gaat terug naar de startpagina.
 
 JO16-3 behoudt de bestaande spelers, wedstrijden en Supabase-opslag. JO16-2 en JO14-3 beginnen met lege teams die je zelf kunt vullen.
 
@@ -32,7 +32,9 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 **Beveiliging:** code 1111 is uitsluitend een client-side toegangsdrempel, geen veilige login. De bestaande testdatabase is toegankelijk voor anonieme clients. Sla geen gevoelige persoonsgegevens op; echte gebruikersauthenticatie en toegangsregels zijn nodig vóór uitgebreider gebruik.
 
 ## Functies
-- Training dinsdag/donderdag en blessurestatus
+- Training dinsdag/donderdag en blessurestatus, met **standaard aanwezig** voor iedere vaste speler. Alleen expliciete afwezigmeldingen (`no`) sluiten uit.
+- Herbruikbare **gastspelerslijst** met naam, rugnummer, herkomst en voorkeursposities; gastspelers worden pas meegenomen bij een wedstrijd wanneer ze daar zijn aangevinkt.
+- Per wedstrijd standaard alle vaste spelers beschikbaar, tenzij als afwezig of geblesseerd gemarkeerd.
 - Wedstrijden en wedstrijd-aanwezigheid
 - 4-3-3 met twee controlerende middenvelders
 - Volledige wisselrondes na 20 minuten eerste helft, rust en 20 minuten tweede helft; JO16 speelt 2×40 minuten, JO14 speelt 2×35 minuten
@@ -40,6 +42,7 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - **Download PDF · 4 pagina’s** op het wedstrijdscherm: één A4-pagina per veldopstelling met alle bijbehorende UIT → IN-wissels, datum, tegenstander en verzameltijd. Geen externe PDF-service.
 - Bij elk wisselmoment staan de namen van de uitgaande en inkomende spelers inclusief posities; de bestaande wisseltijdlijn blijft staan
 - Bij handmatig verwisselen van basisspelers worden de drie volgende veldplaatjes en de wisselteksten opnieuw berekend
+- Scheidsrechter- en grensrechterrotatie voor JO16-3 en JO14-3; **niet voor JO16-2** (ook verborgen in oudersbericht, poster, historie en het dashboard).
 - Officials en speelminuten
 - WhatsApp-ouderbericht met Google Maps-route
 - Downloadbare PNG-wedstrijdposter met logo's, weer, veld en officials
@@ -67,3 +70,10 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 Als de database niet reageert, blijft lokale opslag werken maar synchroniseert het team niet. Controleer dan de foutmelding onderaan het dashboard.
 
 De automatische opstellingen draaien **vrijdag vanaf 11:00 uur Europe/Amsterdam** met GitHub Actions en herhalingscontroles tijdens de late ochtend. Dit geldt voor alle drie de teams. De taak werkt alleen als er een zaterdagwedstrijd én minstens elf inzetbare spelers (inclusief keeper) zijn. Hij slaat teams zonder programma over en overschrijft bestaande opstellingen voor dezelfde wedstrijd niet. GitHub Actions kan vertraging hebben. Handmatig testen kan via **Actions → FootballForge – vrijdag 11:00 opstellingen → Run workflow → dry_run=true**. Sportlink/VoetbalAssist is nog niet gekoppeld.
+
+## JO16-2 inrichting – belangrijke aandachtspunten
+De bestaande JO16-2-spelers en het door de trainers ingevoerde wedstrijdprogramma worden **niet** door een migratie of seed vervangen. Spelers zonder positie blijven bestaan; vul hun posities in voordat je een zinvolle opstelling verwacht. Er moet minimaal één speler voorkeurpositie **1 (keeper)** hebben.
+
+Gastspeler toevoegen: **Spelers → Gastspelers**; naam invullen, eventueel rugnummer, posities en team van herkomst. Selecteren: **Wedstrijd → Gastspelers voor deze wedstrijd**. De gast telt alleen bij die geselecteerde wedstrijd mee, ook in de vrijdag 11:00-automatisering en de vierpagina-PDF.
+
+Zowel dinsdag/donderdag als bij de zaterdagwedstrijd geldt: **iedere vaste speler is automatisch aanwezig/beschikbaar**, tenzij je op Afwezig zet of als geblesseerd markeert. Een gastspeler is juist **standaard niet geselecteerd**.
