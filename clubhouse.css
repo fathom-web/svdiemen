@@ -222,3 +222,10 @@ body[data-team="jo16-2"] .ff-official-only{display:none!important}
 @media(max-width:1170px){.ff-guest-add{grid-template-columns:repeat(2,minmax(0,1fr))}.ff-guest-add .btn{grid-column:1/-1}.ff-guest-edit{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.ff-guest-roster,.ff-guest-picks{grid-template-columns:1fr}.ff-guest-add{grid-template-columns:1fr 1fr}.ff-guest-add label:first-child,.ff-guest-add label:nth-child(4),.ff-guest-add .btn{grid-column:1/-1}.ff-guest-edit{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:490px){.ff-guest-add{grid-template-columns:1fr 1fr}.ff-guest-pick{padding:10px}.ff-att-switch button{min-width:0;padding:8px 6px;font-size:11px}}
+
+/* Database comparison and recovery panel in History */
+.ff-data-health{margin-top:22px;padding:18px 19px;background:#f4f8f1;border:1px solid #dce8d7;border-radius:13px}
+.ff-data-health h3{margin:0 0 8px;font-size:16px;color:#21452f}
+.ff-data-health p{line-height:1.6}
+.ff-data-health .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.ff-data-health .actions .btn{font-size:12px}
