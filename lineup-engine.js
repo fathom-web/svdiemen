@@ -158,5 +158,23 @@
       created:options.created||new Date().toISOString(),source:options.source||'handmatig'
     };
   }
-  return {createPlan,calculateRotations,monday,keyOf,unavailable,suitability,MOMENTS,matchPeriodInfo};
+  /**
+   * Four read-only lineup snapshots: kick-off followed by the three substitutions.
+   * No database migration: calculate from the stored lineup and swaps every render.
+   */
+  function lineupSnapshots(g){
+    if(!g?.lineup)return [];
+    const current={...g.lineup};
+    const phases=[{time:0,label:'Startopstelling',lineup:{...current},changes:[]}];
+    for(const sw of (g.swaps||[]).slice(0,3)){
+      for(const change of (sw.changes||[])){
+        if(!change.pos||!change.in)continue;
+        // A phase's position always contains the incoming player after a substitution.
+        current[change.pos]=change.in;
+      }
+      phases.push({time:sw.time,label:sw.label||String(sw.time),lineup:{...current},changes:sw.changes||[]});
+    }
+    return phases;
+  }
+  return {createPlan,calculateRotations,lineupSnapshots,monday,keyOf,unavailable,suitability,MOMENTS,matchPeriodInfo};
 });
