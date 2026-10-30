@@ -2,6 +2,16 @@
 
 FootballForge is de teammanager voor **JO16-3, JO16-2 en JO14-3** op GitHub Pages.
 
+## Clubhouse-uitstraling (2026)
+- Nieuwe warm-witte, donkergroene voetbalinterface: geen neonblauw IT-dashboard.
+- Origineel FootballForge-wapenschild in `footballforge-mark.svg`, gebruikt als logo en favicon.
+- Hoofdpagina met drie teamkaarten, elk met dezelfde PIN-flow.
+- Teamdashboard met linkerzijbalk op desktop en compacte navigatie op mobiel/tablet.
+- Nieuwe snelle acties voor wedstrijd, training en spelers.
+- Op mobiel wissel je met vier tabs tussen de vier opstellingen; op desktop vergelijk je ze naast elkaar.
+- Alle teamdata, Supabase-synchronisatie, vrijdagautomatisering en PDF-export blijven intact.
+- Fotografie is decoratief, gebruikt publieke Unsplash-afbeeldingen en heeft een groene achtergrondkleur als fallback.
+
 ## Starten
 Open https://fathom-web.github.io/svdiemen/, klik een team en voer code **1111** in. Daarna verschijnt het eigen dashboard. De knop **← Teams** gaat terug naar de startpagina.
 
@@ -36,7 +46,9 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - Import/export als JSON
 
 ## Bestanden
-- `index.html`: hoofdpagina, teamkeuze en toegangscode
+- `index.html`: Clubhouse-hoofdpagina, teamkeuze en toegangscode
+- `clubhouse.css`: gedeelde responsive warm-witte/donkergroene vormgeving
+- `footballforge-mark.svg`: originele FootballForge-merkidentiteit
 - `team.html`: teamdashboard, Supabase-synchronisatie
 - `lineup-engine.js`: opstellingen en wissels
 - `matchday-pdf.js`: lokale PDF-export van vier opstellingen en wisselregels
