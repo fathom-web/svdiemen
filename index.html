@@ -107,7 +107,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #3f91
    e.preventDefault();if(!chosen)return;
    const expected=chosen==='jo16-2'?'2222':'1111';
    if(input.value!==expected){error.textContent='Onjuiste code. Probeer opnieuw.';input.value='';input.focus();return}
-   sessionStorage.setItem('footballforge-access-'+chosen,'1');
+   sessionStorage.setItem('footballforge-access-'+chosen,expected);
    location.assign('./team.html?team='+encodeURIComponent(chosen));
  });
 })();
