@@ -77,3 +77,12 @@ De bestaande JO16-2-spelers en het door de trainers ingevoerde wedstrijdprogramm
 Gastspeler toevoegen: **Spelers → Gastspelers**; naam invullen, eventueel rugnummer, posities en team van herkomst. Selecteren: **Wedstrijd → Gastspelers voor deze wedstrijd**. De gast telt alleen bij die geselecteerde wedstrijd mee, ook in de vrijdag 11:00-automatisering en de vierpagina-PDF.
 
 Zowel dinsdag/donderdag als bij de zaterdagwedstrijd geldt: **iedere vaste speler is automatisch aanwezig/beschikbaar**, tenzij je op Afwezig zet of als geblesseerd markeert. Een gastspeler is juist **standaard niet geselecteerd**.
+
+## Bescherming tegen lege cloudgegevens (30 oktober 2026)
+De app bewaart nu bij niet-lege teams een extra herstelkopie in de browser onder `footballforge-recovery-<team>`. Wanneer de Supabase-versie minder teaminhoud bevat dan de lokale browser, wordt de rijkere lokale versie **niet meer stilzwijgend overschreven**. De app toont dan een waarschuwing; de trainer kan zelf besluiten lokale gegevens te publiceren of de cloudversie te gebruiken.
+
+Onder **Historie → Controleer jouw teamgegevens → Controleer gegevens** staan de aantallen spelers en wedstrijden in de browser, Supabase en het herstelpunt. Een historische browserkopie is niet gegarandeerd beschikbaar als de eerdere app die gegevens al overschreef.
+
+Onder **Historie → Voeg spelers/programma toe** kan een JSON met `teamName`, `players` en `fixtures` veilig worden samengevoegd. Spelers met dezelfde naam en wedstrijden met dezelfde datum + tegenstander worden niet nogmaals toegevoegd. De bestaande opstellingen, trainingen en andere gegevens blijven behouden. **Volledige back-up terugzetten** is een aparte actie die wel bestaande teamgegevens kan vervangen.
+
+De incorrecte JO16-3-stafbadge is uit de historiepagina verwijderd (ook voor JO16-3); er worden geen afbeeldingen of namen van stafleden van andere teams meer getoond.
