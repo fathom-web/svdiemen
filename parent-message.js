@@ -83,8 +83,13 @@
     if(m.field)lines.push("Veld: "+m.field);
     if(mapsUrl(m))lines.push("Route via Google Maps:\n"+mapsUrl(m));
     if(weatherLine(weather))lines.push("\nWeersverwachting: "+weatherLine(weather)+" (bron: Open-Meteo)");
-    lines.push("","Grensrechter: "+of.linesman);
-    if(home)lines.push("Scheidsrechter: "+of.referee);
+    if(team!=="JO16-2"){
+      lines.push("","Grensrechter: "+of.linesman);
+      if(home)lines.push("Scheidsrechter: "+of.referee);
+    }
+    const selectedGuests=new Set((state.matchGuestIds||{})[String(m.date||"")+"|"+String(m.opponent||"")]||[]);
+    const guests=(state.guestPlayers||[]).filter(p=>selectedGuests.has(p.id)&&!p.injured);
+    if(guests.length)lines.push("","Gastspelers: "+guests.map(p=>p.name).join(", "));
     if(m.parentNote?.trim())lines.push("","\uD83D\uDCCC "+m.parentNote.trim());
     lines.push("","Zorg dat je op tijd bent, neem je spullen mee en meld onverwachte afwezigheid direct bij de trainers.","","*Tot zaterdag!*\n"+(team==="JO16-3"?"Siam, Melcher & Rob":"De trainers"));
     return lines.join("\n");
@@ -155,8 +160,13 @@
     card(56,893,732,134,"SPORTPARK",m.venue||"Locatie volgt");
     card(805,893,219,134,"VELD",m.field||"Nog niet bekend");
     const of=officials(state);
-    card(56,1042,473,134,"GRENSRECHTER",of.linesman);
-    card(550,1042,474,134,"SCHEIDSRECHTER",m.home==="home"?of.referee:"Gastvereniging");
+    if(team==="JO16-2"){
+      card(56,1042,473,134,"TEAM","SV DIEMEN "+team);
+      card(550,1042,474,134,"AFSPRAAK","OP TIJD VERZAMELEN");
+    }else{
+      card(56,1042,473,134,"GRENSRECHTER",of.linesman);
+      card(550,1042,474,134,"SCHEIDSRECHTER",m.home==="home"?of.referee:"Gastvereniging");
+    }
     rounded(ctx,56,1190,968,112,18,"#071d3b","#2a5a92");
     ctx.fillStyle="#a7cfff";ctx.font="700 20px system-ui,sans-serif";
     ctx.fillText("WEER & PRAKTISCHE INFO",540,1223);
