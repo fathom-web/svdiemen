@@ -599,7 +599,7 @@ renderGenerated=function(){
  if(!g){el.innerHTML='<div class="empty" style="z-index:2">Maak eerst de opstelling.</div>';document.getElementById('bench').innerHTML='<div class="empty">Nog niet geselecteerd</div>';document.getElementById('subs').innerHTML='<div class="empty">Geen wissels berekend.</div>';document.getElementById('officials').textContent='Nog niet toegewezen';document.getElementById('message').textContent='Genereer de opstelling om het wedstrijdbericht te maken.';document.getElementById('generatedMeta').textContent='';return}
  document.getElementById('generatedMeta').textContent='Gegenereerd '+new Date(g.created).toLocaleString('nl-NL')+' · '+(g.duration||80)+' minuten · alle reserves erin na 20 minuten 1e helft, in de rust en na 20 minuten 2e helft. Klik of sleep twee posities om de basisspelers te verwisselen.'+(g.warnings?.length?' ⚠ '+g.warnings.join(' '):'');
  el.innerHTML=LINES.map(line=>'<div class="line">'+line.map(pos=>{const p=byId(g.lineup[pos]);return '<button class="pitch-player" draggable="'+(pos!=='GK')+'" ondragstart="lineupDrag(event,\''+pos+'\')" ondragover="event.preventDefault()" ondrop="lineupDrop(event,\''+pos+'\')" onclick="selectLineupPosition(\''+pos+'\')" title="Selecteer positie '+pos+'"><div class="shirt">'+esc(p?.number||positionNumber[pos])+'</div><span class="player-label">'+esc(p?.name||'?')+'</span><span class="position-label">'+(positionText[pos]||pos)+'</span></button>'}).join('')+'</div>').join('');
- const subs=s.players.filter(p=>!p.injured&&!Object.values(g.lineup).includes(p.id));
+ const subs=getMatchPlayers().filter(p=>!JO163Engine.unavailable(s,s.match,p)&&!Object.values(g.lineup).includes(p.id));
  document.getElementById('bench').innerHTML='<div class="bench-tags">'+(subs.map(p=>'<span>'+esc(p.number?('#'+p.number+' '):'')+esc(p.name)+'</span>').join('')||'<span>Geen reserves</span>')+'</div>';
  document.getElementById('subs').innerHTML=(g.swaps||[]).map(sw=>'<div class="time-event"><div class="time-node">'+esc(sw.label||sw.time+'’')+'</div><div class="time-content">'+(sw.changes.length?sw.changes.map(c=>'<div class="swap"><span class="out">UIT '+esc(byId(c.out)?.name||'?')+'</span><span class="swap-arrow">→</span><span class="in">IN '+esc(byId(c.in)?.name||'?')+'</span><span class="pos-tag">'+esc(positionText[c.pos]||c.pos)+'</span></div>').join(''):'<div class="muted">Geen passende wissel beschikbaar</div>')+'</div></div>').join('');
  document.getElementById('officials').innerHTML='<div class="officer-card"><span>Grensrechter</span><strong>'+esc(g.linesman)+'</strong></div><div class="officer-card"><span>Scheidsrechter</span><strong>'+esc(g.referee)+'</strong></div>';
@@ -825,6 +825,149 @@ const renderGeneratedParentBase=renderGenerated;
 renderGenerated=function(){renderGeneratedParentBase();renderFourLineups();refreshParent()};
 const saveMatchParentBase=saveMatch;
 saveMatch=function(){saveMatchParentBase();refreshParent()};
+
+
+/* FootballForge availability & guest player helpers.
+   All existing player and fixture records remain untouched; guests are opt-in by fixture.
+ */
+const ffPositionMap={1:'GK',2:'RB',3:'RCB',4:'LCB',5:'LB',6:'LDM',8:'RDM',10:'CAM',7:'RW',9:'ST',11:'LW'};
+function ffGuestPositionList(input){
+ return [...new Set(String(input||'').split(/[\s,;/]+/).map(n=>ffPositionMap[n]||'').filter(Boolean))];
+}
+function ffGuestIds(match=s.match){
+ const key=JO163Engine.keyOf(match);
+ return new Set((s.matchGuestIds||{})[key]||[]);
+}
+function getMatchPlayers(match=s.match){
+ const chosen=ffGuestIds(match);
+ return [...s.players,...(s.guestPlayers||[]).filter(p=>chosen.has(p.id))];
+}
+function ffInvalidatePlan(){
+ if(s.generated?.date===s.match?.date&&s.generated?.opponent===s.match?.opponent)s.generated=null;
+}
+function addGuestPlayer(){
+ const name=document.getElementById('guestName').value.trim();
+ const n=document.getElementById('guestNumber').value.trim();
+ const source=document.getElementById('guestSource').value.trim();
+ const positions=ffGuestPositionList(document.getElementById('guestPositions').value);
+ if(!name)return showToast('Vul de naam van de gastspeler in');
+ if(n&&(Number(n)<1||Number(n)>99))return showToast('Rugnummer moet tussen 1 en 99 zijn');
+ s.guestPlayers ||= [];
+ if(s.guestPlayers.length>=24)return showToast('Maximaal 24 gastspelers in de lijst');
+ const found=s.guestPlayers.some(p=>p.name.toLowerCase()===name.toLowerCase());
+ if(found)return showToast('Deze gastspeler staat al in de lijst');
+ const guest={id:'guest-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
+    name,number:n?Number(n):'',preferences:positions,primary:positions[0]||'',secondary:positions[1]||'',source,guest:true,
+    injured:false,minutes:0,starts:0};
+ s.guestPlayers.push(guest);
+ save();
+ for(const id of ['guestName','guestNumber','guestPositions','guestSource'])document.getElementById(id).value='';
+ renderGuestRoster();renderGuestMatchPicker();
+ showToast('Gastspeler toegevoegd. Zet hem bij de gewenste wedstrijd aan.');
+}
+function updateGuestPlayer(id,key,value){
+ const guest=(s.guestPlayers||[]).find(p=>p.id===id);if(!guest)return;
+ if(key==='preferences'){
+   const positions=ffGuestPositionList(value);
+   guest.preferences=positions;guest.primary=positions[0]||'';guest.secondary=positions[1]||'';
+ }else if(key==='number'){
+   guest.number=value===''?'':Number(value);
+ }else guest[key]=value;
+ ffInvalidatePlan();save();renderGuestRoster();renderGuestMatchPicker();renderGenerated();
+}
+function removeGuestPlayer(id){
+ const p=(s.guestPlayers||[]).find(x=>x.id===id);if(!p||!confirm('Gastspeler '+p.name+' uit de gastenlijst verwijderen?'))return;
+ s.guestPlayers=s.guestPlayers.filter(x=>x.id!==id);
+ for(const ids of Object.values(s.matchGuestIds||{})){
+   const i=ids.indexOf(id);if(i>=0)ids.splice(i,1);
+ }
+ ffInvalidatePlan();save();renderGuestRoster();renderGuestMatchPicker();renderGenerated();
+}
+function toggleMatchGuest(id,active){
+ if(!s.match?.date||!s.match?.opponent)return showToast('Selecteer eerst een wedstrijd');
+ const guest=(s.guestPlayers||[]).find(p=>p.id===id);
+ if(!guest)return;
+ if(active&&guest.injured)return showToast('Een geblesseerde gastspeler kan niet worden geselecteerd');
+ const key=JO163Engine.keyOf(s.match);
+ s.matchGuestIds ||= {};
+ const ids=new Set(s.matchGuestIds[key]||[]);
+ active?ids.add(id):ids.delete(id);
+ s.matchGuestIds[key]=[...ids];
+ ffInvalidatePlan();save();renderGuestMatchPicker();renderAvailability();renderGenerated();
+ showToast(active?guest.name+' geselecteerd voor deze wedstrijd':guest.name+' uit selectie gehaald');
+}
+function renderGuestRoster(){
+ const total=document.getElementById('guestCount'),box=document.getElementById('guestRoster');
+ if(!total||!box)return;
+ const guests=s.guestPlayers||[];
+ total.textContent=guests.length+' gastspeler'+(guests.length===1?'':'s');
+ if(!guests.length){box.innerHTML='<p class="muted ff-guest-empty">Nog geen gastspelers. Voeg er hierboven één toe; je kunt hem daarna bij een wedstrijd selecteren.</p>';return;}
+ box.innerHTML='<div class="ff-guest-roster">'+guests.map(p=>{
+  const id=esc(p.id),pref=(p.preferences||[]).map(pos=>positionNumber[pos]||pos).join(', ');
+  return '<article class="ff-guest-item"><div class="ff-guest-item-title"><span class="ff-guest-avatar">G</span><strong>'+esc(p.name)+'</strong><span class="ff-guest-tag">GAST</span></div>'
+   +'<div class="ff-guest-edit"><label>Naam<input value="'+esc(p.name)+'" onchange="updateGuestPlayer(\''+id+'\',\'name\',this.value)"></label>'
+   +'<label>Rugnummer<input type="number" min="1" max="99" value="'+esc(p.number??'')+'" onchange="updateGuestPlayer(\''+id+'\',\'number\',this.value)"></label>'
+   +'<label>Posities<input value="'+esc(pref)+'" placeholder="Bijv. 2,5" onchange="updateGuestPlayer(\''+id+'\',\'preferences\',this.value)"></label>'
+   +'<label>Team van herkomst<input value="'+esc(p.source||'')+'" onchange="updateGuestPlayer(\''+id+'\',\'source\',this.value)"></label></div>'
+   +'<button type="button" class="btn danger compact" onclick="removeGuestPlayer(\''+id+'\')">Verwijder gastspeler</button></article>';
+ }).join('')+'</div>';
+}
+function renderGuestMatchPicker(){
+ const box=document.getElementById('guestMatchPicker');if(!box)return;
+ const guests=s.guestPlayers||[],chosen=ffGuestIds();
+ if(!guests.length){box.innerHTML='<p class="muted">Nog geen gastspelers. Voeg een speler toe via het tabblad Spelers.</p>';return;}
+ box.innerHTML='<div class="ff-guest-picks">'+guests.map(p=>{
+   const selected=chosen.has(p.id),disabled=!!p.injured;
+   return '<label class="ff-guest-pick '+(selected?'selected':'')+'"><input type="checkbox" '+(selected?'checked':'')+(disabled?' disabled':'')
+    +' onchange="toggleMatchGuest(\''+esc(p.id)+'\',this.checked)"><span><strong>'+esc(p.name)+'</strong><small>'
+    +esc(p.source||'Gastspeler')+' · '+esc((p.preferences||[]).map(pos=>positionNumber[pos]||pos).join(', ')||'Posities volgen')
+    +(disabled?' · Geblesseerd':'')+'</small></span><span class="ff-guest-tag">'+(selected?'DOET MEE':'OPTIE')+'</span></label>';
+ }).join('')+'</div>';
+}
+// Attendance is exception-based: every player is present unless marked absent.
+renderAttendance=function(){
+ document.getElementById('weekDate').value=s.week;
+ const isAway=(id,day)=>s.att[attendanceKey(id,day)]==='no';
+ let away=0;
+ document.getElementById('attendance').innerHTML=s.players.map(p=>{
+   const group=day=>{
+     const absent=isAway(p.id,day);if(absent)away++;
+     return '<div class="att-day"><small>'+(day==='di'?'DINSDAG':'DONDERDAG')+'</small><div class="segment ff-att-switch" role="group" aria-label="Aanwezigheid '+esc(p.name)+' '+day+'">'
+      +'<button type="button" class="'+(!absent?'selected':'')+'" aria-pressed="'+(!absent)+'" onclick="setAttendance(\''+p.id+'\',\''+day+'\',\'\')">✓ Verwacht</button>'
+      +'<button type="button" class="no '+(absent?'selected':'')+'" aria-pressed="'+absent+'" onclick="setAttendance(\''+p.id+'\',\''+day+'\',\'no\')">✕ Afwezig</button></div></div>';
+   };
+   return '<div class="att-row '+(p.injured?'is-injured':'')+'"><div class="player-name"><div class="avatar">'+esc(p.number||positionNumber[p.primary]||'–')+'</div><div><strong>'+esc(p.name)+'</strong>'+(p.injured?'<div class="injury">Geblesseerd</div>':'')+'</div></div>'+group('di')+group('do')+'</div>';
+ }).join('');
+ document.getElementById('attendanceCount').textContent=away+' afwezig gemeld · '+(s.players.length*2-away)+' standaard verwacht';
+};
+setAttendance=function(id,day,value){
+ const key=attendanceKey(id,day);
+ if(value==='no')s.att[key]='no';else delete s.att[key];
+ save();renderAttendance();renderStats();
+ const note=document.getElementById('trainingSaved');
+ if(note)note.textContent=value==='no'?'Afwezigmelding opgeslagen':'Standaard aanwezigheid hersteld';
+};
+// Matchday: normal players always available, unless explicitly absent/injured.
+renderAvailability=function(){
+ const box=document.getElementById('matchAvailability');if(!box)return;
+ const key=JO163Engine.keyOf(s.match),data=s.matchAvailability?.[key]||{};
+ const fixed=s.players.filter(p=>!p.injured&&data[p.id]!=='no').length;
+ const guests=(s.guestPlayers||[]).filter(p=>ffGuestIds().has(p.id)&&!p.injured&&data[p.id]!=='no').length;
+ box.innerHTML=s.players.map(p=>{
+   const injured=!!p.injured,absent=data[p.id]==='no';
+   return '<div class="availability-item '+(injured||absent?'ff-unavailable':'ff-available')+'"><strong>'+esc(p.name)
+    +(injured?' <small>· geblesseerd</small>':'')+'</strong>'
+    +'<select aria-label="Beschikbaarheid '+esc(p.name)+'" '+(injured?'disabled':'')
+    +' onchange="updateMatchAvailability(\''+p.id+'\',this.value)">'
+    +'<option value="unknown" '+(!absent?'selected':'')+'>✓ Beschikbaar (standaard)</option>'
+    +'<option value="no" '+(absent?'selected':'')+'>✕ Afwezig</option></select></div>';
+ }).join('');
+ document.getElementById('matchAvailabilityCount').textContent=(fixed+guests)+' inzetbaar'+(guests?' · '+guests+' gast':'');
+ renderGuestMatchPicker();
+};
+// Guests have a separate section under permanent players.
+const ffRenderRoster=renderRoster;
+renderRoster=function(){ffRenderRoster();renderGuestRoster();};
 
 render();
 loadShared();
