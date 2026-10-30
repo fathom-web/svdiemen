@@ -79,7 +79,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 .ff-match-details{margin-top:17px}
 @media(max-width:900px){.ff-phase-grid{grid-template-columns:1fr}.ff-phase-card{max-width:650px;width:100%;margin:0 auto}}
 @media(max-width:480px){.ff-phase-grid{gap:14px}.ff-phase-card{padding:12px;border-radius:15px}.ff-phase-heading{gap:9px}.ff-phase-title h3{font-size:15px}.ff-phase-pitch{min-height:335px;padding:13px 6px}.ff-phase-pitch .pitch-player{max-width:73px}.ff-phase-pitch .shirt{width:29px;height:32px;font-size:12px}.ff-phase-pitch .player-label{font-size:9px}.ff-phase-swap{font-size:11px;gap:3px}}
-.ff-export-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ff-pdf-btn{background:linear-gradient(112deg,#217ee5,#1656b3);border:1px solid #57a3ff;color:white;font-weight:850;box-shadow:0 7px 20px #0003}.ff-pdf-btn:disabled{opacity:.6;cursor:progress}.ff-phases-module>.row-title{align-items:center}@media(max-width:660px){.ff-export-actions{width:100%}.ff-export-actions .ff-pdf-btn{width:100%;justify-content:center}.ff-phases-module>.row-title{align-items:stretch;flex-direction:column}} </style></head><body>
+.ff-export-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ff-pdf-btn{background:linear-gradient(112deg,#217ee5,#1656b3);border:1px solid #57a3ff;color:white;font-weight:850;box-shadow:0 7px 20px #0003}.ff-pdf-btn:disabled{opacity:.6;cursor:progress}.ff-phases-module>.row-title{align-items:center}@media(max-width:660px){.ff-export-actions{width:100%}.ff-export-actions .ff-pdf-btn{width:100%;justify-content:center}.ff-phases-module>.row-title{align-items:stretch;flex-direction:column}} </style><link rel="stylesheet" href="./clubhouse.css?v=1"><link rel="icon" type="image/svg+xml" href="./footballforge-mark.svg"></head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
 <symbol id="ic-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10h-7v-7h-4v7H3z"/></symbol>
 <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3zM17 5a3 3 0 0 1 0 6m0 3a5 5 0 0 1 4 5"/></symbol>
@@ -94,13 +94,15 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <symbol id="ic-save" viewBox="0 0 24 24"><path d="M4 3h13l3 3v15H4zM8 3v7h8V3M8 21v-8h8v8"/></symbol>
 </svg>
 <div class="shell">
-<header class="topbar"><div class="identity"><a href="./index.html" class="brand-mark" aria-label="Terug naar FootballForge" style="text-decoration:none">FF</a><div><strong>FOOTBALL<span style="color:#5ba8ff">FORGE</span> <span id="teamHeaderTitle" style="color:#e5f3ff"></span></strong><small>SV DIEMEN · SEIZOEN 2026/2027</small></div></div><div class="top-tools"><a href="./index.html" class="btn secondary compact" style="text-decoration:none">← Teams</a><div class="sync-tag" id="headerConnection"><span class="live-dot"></span>TEAMDASHBOARD</div></div></header>
+<header class="topbar"><div class="identity"><a href="./index.html" class="brand-mark" aria-label="Terug naar FootballForge">FootballForge</a><div><strong>Football<span>Forge</span> <span id="teamHeaderTitle"></span></strong><small>SV DIEMEN · SEIZOEN 2026/2027</small></div></div><div class="top-tools"><a href="./index.html" class="btn secondary compact" style="text-decoration:none">← Teams</a><div class="sync-tag" id="headerConnection"><span class="live-dot"></span>TEAMDASHBOARD</div></div></header>
 <nav class="nav" aria-label="Hoofdnavigatie">
+<a class="clubhouse-navbrand" href="./index.html" aria-label="FootballForge Clubhouse"><img src="./footballforge-mark.svg" alt=""><span><strong>FootballForge</strong><small>Team Management</small></span></a>
 <button data-tab="dashboard" class="active"><svg class="ico"><use href="#ic-home"/></svg>Dashboard</button>
 <button data-tab="team"><svg class="ico"><use href="#ic-users"/></svg>Spelers</button>
 <button data-tab="training"><svg class="ico"><use href="#ic-calendar"/></svg>Training</button>
 <button data-tab="match"><svg class="ico"><use href="#ic-ball"/></svg>Wedstrijd</button>
 <button data-tab="history"><svg class="ico"><use href="#ic-chart"/></svg>Historie</button>
+<div class="clubhouse-navfoot">SV Diemen · 2026/2027<br>Voetbal verbindt.</div>
 </nav>
 <section id="dashboard" class="pane active">
 <div class="heading"><div><span class="kicker" id="dashboardTeamLabel">FOOTBALLFORGE · TEAM</span><h1>Commandocentrum</h1><p>Alles voor de volgende wedstrijd in één overzicht.</p></div></div>
@@ -117,6 +119,11 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-calendar"/></svg> Donderdag</div><strong id="statThursday">0/16</strong><div class="stat-note">training</div></div>
 <div class="statcard"><div class="stat-label"><svg class="ico"><use href="#ic-clock"/></svg> Auto-opstelling</div><strong style="font-size:24px">Vr 11:00</strong><div class="stat-note" id="statTraining">Zaterdagwedstrijd · automatische selectie</div></div>
 </div></div>
+<div class="ff-quick-grid" aria-label="Snelle acties">
+ <button type="button" onclick="tab('match')"><span class="ff-quick-icon">⚽</span><span><strong>Opstelling & wissels</strong><small>Maak je wedstrijdplan</small></span><span class="ff-quick-arrow">↗</span></button>
+ <button type="button" onclick="tab('training')"><span class="ff-quick-icon">✓</span><span><strong>Aanwezigheid</strong><small>Training op dinsdag en donderdag</small></span><span class="ff-quick-arrow">↗</span></button>
+ <button type="button" onclick="tab('team')"><span class="ff-quick-icon">♟</span><span><strong>Spelersselectie</strong><small>Rugnummers en posities</small></span><span class="ff-quick-arrow">↗</span></button>
+</div>
 <div class="dashboard-bottom">
 <section class="module"><div class="row-title"><h2>Komende wedstrijden</h2><button class="mini-link" onclick="tab('match')">Bekijk programma →</button></div><div id="dashboardUpcoming"></div></section>
 <section class="module"><div class="row-title"><h2>Officials & teamstatus</h2><span class="count-pill">ROTATIE</span></div><div id="dashboardOfficials"></div><div id="dashboardAvailability" class="official-rot"></div></section>
@@ -146,24 +153,30 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div class="row-title" style="margin-top:19px"><h2 style="margin:0">Selectie voor zaterdag</h2><span class="count-pill" id="matchAvailabilityCount">16 beschikbaar</span></div><p class="muted">Markeer wie zaterdag niet kan spelen. Een geblesseerde speler wordt altijd uitgesloten.</p><div id="matchAvailability" class="match-availability"></div><div class="match-actions"><button class="btn secondary iconbtn" onclick="addFixture()">Sla wedstrijd op in programma</button><button class="btn iconbtn" onclick="generate()"><svg class="ico"><use href="#ic-ball"/></svg>Genereer opstelling & wissels</button><button class="btn secondary" onclick="resetGenerated()">Opnieuw berekenen</button></div><p id="generatedMeta" class="caption"></p></section>
 <section class="module ff-phases-module" aria-labelledby="fourLineupsTitle">
 <div class="row-title"><div><span class="kicker">FOOTBALLFORGE · MATCHDAY CONTROL</span><h2 id="fourLineupsTitle" style="margin-top:8px">Basis & wisselmomenten</h2></div><div class="ff-export-actions"><span class="count-pill">4 OPSTELLINGEN · 4-3-3</span><button id="downloadLineupPdfBtn" class="btn ff-pdf-btn" onclick="downloadLineupPdf()" type="button">↓ Download PDF · 4 pagina’s</button></div></div>
-<p class="pitch-hint">Vier veldopstellingen van de wedstrijd. Klik of sleep twee veldspelers in de <strong>startopstelling</strong> om ze te verwisselen. Alle volgende plaatjes én wisselteksten worden direct bijgewerkt.</p>
+<p class="pitch-hint">Verschuif spelers in de <strong>startopstelling</strong>. Het wisselschema en de drie volgende opstellingen veranderen automatisch mee.</p>
+<div class="ff-mobile-phase-tabs" role="group" aria-label="Bekijk een wisselmoment">
+ <button type="button" data-ffphase="0" class="active" aria-pressed="true" onclick="selectMatchPhase(0)">Start</button>
+ <button type="button" data-ffphase="1" aria-pressed="false" onclick="selectMatchPhase(1)">20′ 1e helft</button>
+ <button type="button" data-ffphase="2" aria-pressed="false" onclick="selectMatchPhase(2)">Rust</button>
+ <button type="button" data-ffphase="3" aria-pressed="false" onclick="selectMatchPhase(3)">20′ 2e helft</button>
+</div>
 <div class="ff-phase-grid">
-<article class="ff-phase-card" aria-labelledby="ffPhase0Title">
+<article class="ff-phase-card" data-selected="true" aria-labelledby="ffPhase0Title">
   <div class="ff-phase-heading"><div class="ff-phase-number">01</div><div class="ff-phase-title"><span class="ff-phase-kicker">AFTRAP</span><h3 id="ffPhase0Title">Startopstelling</h3></div><span class="ff-phase-minute">0′</span></div>
   <div class="pitch ff-phase-pitch" id="pitch"></div>
   <div class="ff-phase-changes"><span class="ff-phase-changes-label">WISSELS</span><p class="ff-phase-empty">Geen wissels · dit is de basiself.</p></div>
 </article>
-<article class="ff-phase-card" aria-labelledby="ffPhase1Title">
+<article class="ff-phase-card" data-selected="false" aria-labelledby="ffPhase1Title">
   <div class="ff-phase-heading"><div class="ff-phase-number">02</div><div class="ff-phase-title"><span class="ff-phase-kicker">WISSELMOMENT 1</span><h3 id="ffPhase1Title">20 minuten 1e helft</h3></div><span class="ff-phase-minute" id="phaseTag1">20′</span></div>
   <div class="pitch ff-phase-pitch" id="phasePitch1"></div>
   <div class="ff-phase-changes"><span class="ff-phase-changes-label">WIE GAAT ERUIT · WIE KOMT ERIN</span><div id="phaseChanges1"></div></div>
 </article>
-<article class="ff-phase-card" aria-labelledby="ffPhase2Title">
+<article class="ff-phase-card" data-selected="false" aria-labelledby="ffPhase2Title">
   <div class="ff-phase-heading"><div class="ff-phase-number">03</div><div class="ff-phase-title"><span class="ff-phase-kicker">START 2E HELFT</span><h3 id="ffPhase2Title">Rust</h3></div><span class="ff-phase-minute" id="phaseTag2">RUST</span></div>
   <div class="pitch ff-phase-pitch" id="phasePitch2"></div>
   <div class="ff-phase-changes"><span class="ff-phase-changes-label">WIE GAAT ERUIT · WIE KOMT ERIN</span><div id="phaseChanges2"></div></div>
 </article>
-<article class="ff-phase-card" aria-labelledby="ffPhase3Title">
+<article class="ff-phase-card" data-selected="false" aria-labelledby="ffPhase3Title">
   <div class="ff-phase-heading"><div class="ff-phase-number">04</div><div class="ff-phase-title"><span class="ff-phase-kicker">WISSELMOMENT 3</span><h3 id="ffPhase3Title">20 minuten 2e helft</h3></div><span class="ff-phase-minute" id="phaseTag3">60′</span></div>
   <div class="pitch ff-phase-pitch" id="phasePitch3"></div>
   <div class="ff-phase-changes"><span class="ff-phase-changes-label">WIE GAAT ERUIT · WIE KOMT ERIN</span><div id="phaseChanges3"></div></div>
@@ -759,6 +772,15 @@ async function downloadLineupPdf(){
   lineupPdfBusy=false;
   if(button){button.disabled=false;button.textContent='↓ Download PDF · 4 pagina’s'}
  }
+}
+function selectMatchPhase(index){
+ const all=[...document.querySelectorAll('.ff-phase-card')];
+ all.forEach((card,i)=>card.dataset.selected=String(i===index));
+ document.querySelectorAll('[data-ffphase]').forEach(btn=>{
+   const active=Number(btn.dataset.ffphase)===index;
+   btn.classList.toggle('active',active);
+   btn.setAttribute('aria-pressed',String(active));
+ });
 }
 function renderFourLineups(){
  const phases=JO163Engine.lineupSnapshots(s.generated);
