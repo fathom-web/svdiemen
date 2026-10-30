@@ -86,3 +86,10 @@ Onder **Historie → Controleer jouw teamgegevens → Controleer gegevens** staa
 Onder **Historie → Voeg spelers/programma toe** kan een JSON met `teamName`, `players` en `fixtures` veilig worden samengevoegd. Spelers met dezelfde naam en wedstrijden met dezelfde datum + tegenstander worden niet nogmaals toegevoegd. De bestaande opstellingen, trainingen en andere gegevens blijven behouden. **Volledige back-up terugzetten** is een aparte actie die wel bestaande teamgegevens kan vervangen.
 
 De incorrecte JO16-3-stafbadge is uit de historiepagina verwijderd (ook voor JO16-3); er worden geen afbeeldingen of namen van stafleden van andere teams meer getoond.
+
+## JO16-2 – éénmalig gegevensherstel uit screenshots (30 oktober 2026)
+FootballForge heeft een eenmalige herstelset in `jo16-2-recovery.js` met **16 zichtbaar genoemde spelers** en **6 wedstrijden (7 november t/m 5 december 2026)** uit de door de trainers aangeleverde screenshots. De voorkeursposities blijven leeg, behalve Senna Yildirim (GK). De data worden **alleen aan JO16-2 toegevoegd**, bestaande spelers op naam en wedstrijden op datum/tegenstander worden niet dubbel aangemaakt. Het veld `jo162ScreenshotSeedVersion=1` voorkomt opnieuw toevoegen wanneer een trainer later bewust een speler of wedstrijd verwijdert.
+
+De eerste keer dat JO16-2 wordt geopend na publicatie, vult de app de ontbrekende gegevens automatisch aan via de bestaande Supabase-rij met compare-and-swap. De andere teams blijven ongewijzigd. Testgevallen met een volledig lege cloud en met al bestaande spelers/wedstrijden zijn doorlopen. De daadwerkelijke productie-run moet nog worden bevestigd via het dashboard.
+
+**Privacy:** de huidige GitHub Pages- en Supabase-testopzet heeft geen echte gebruikersauthenticatie. De publieke herstelset bevat namen van jeugdspelers; verplaats de spelersgegevens naar een beveiligde gegevensbron en stel Supabase Auth + teamgebonden RLS in voordat de website buiten de trainersgroep wordt gebruikt.
