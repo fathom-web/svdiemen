@@ -29,7 +29,7 @@ Nieuwe teams worden bij de eerste databaseverbinding automatisch aangemaakt. Bij
 
 Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of gesynchroniseerd. Er blijft ook een lokale reservekopie op het apparaat. Op het teamdashboard staat de status van de Supabase-verbinding.
 
-**Beveiliging:** code 1111 is uitsluitend een client-side toegangsdrempel, geen veilige login. De bestaande testdatabase is toegankelijk voor anonieme clients. Sla geen gevoelige persoonsgegevens op; echte gebruikersauthenticatie en toegangsregels zijn nodig vóór uitgebreider gebruik.
+**Beveiliging:** de teamcodes zijn uitsluitend een client-side toegangsdrempel, geen veilige login. De bestaande testdatabase is toegankelijk voor anonieme clients. Sla geen gevoelige persoonsgegevens op; echte gebruikersauthenticatie en toegangsregels zijn nodig vóór uitgebreider gebruik.
 
 ## Functies
 - Training dinsdag/donderdag en blessurestatus, met **standaard aanwezig** voor iedere vaste speler. Alleen expliciete afwezigmeldingen (`no`) sluiten uit.
@@ -61,7 +61,7 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - `scripts/friday-lineup.cjs`: automatische vrijdagopstelling voor JO16-3
 
 ## Synchronisatie testen
-1. Open een team, voer code 1111 in en kijk of Supabase onderaan als verbonden wordt gemeld.
+1. Open een team, voer de bijbehorende teamcode in en kijk of Supabase onderaan als verbonden wordt gemeld.
 2. Klik op **Test database-sync**. FootballForge schrijft een onschuldige controlewaarde naar dit team en leest die rechtstreeks terug uit Supabase. Succes is: **lezen én schrijven in Supabase geslaagd**.
 3. Voeg op apparaat A een testspeler toe (bijvoorbeeld in JO16-2).
 4. Open hetzelfde team op apparaat B en controleer of de speler verschijnt na verversen of maximaal 30 seconden.
