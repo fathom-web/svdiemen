@@ -26,7 +26,7 @@
     return d.toISOString().slice(0,10);
   }
   function keyOf(f){return String(f.date||'')+'|'+String(f.opponent||'');}
-  function positions(p){return Array.isArray(p.preferences)&&p.preferences.length?p.preferences:[p.primary,p.secondary].filter(Boolean);}
+  function positions(p){return Array.isArray(p?.preferences)&&p.preferences.length?p.preferences:[p?.primary,p?.secondary].filter(Boolean);}
   function suitability(p,pos){
     const prefs=positions(p);
     if(pos==='GK')return prefs[0]==='GK'?190:-1000;
@@ -38,7 +38,7 @@
   }
   function training(state,p,week){
     const att=state.att||{};
-    return ['di','do'].reduce((sum,day)=>sum+(att[week+':'+day+':'+p.id]==='yes'?1:0),0);
+    return ['di','do'].reduce((sum,day)=>sum+(att[week+':'+day+':'+p.id]!=='no'?1:0),0);
   }
   function unavailable(state,match,p){
     const status=(state.matchAvailability||{})[keyOf(match)]?.[p.id];
@@ -75,7 +75,7 @@
   }
   function initialLineup(state,match,available){
     const keeper=available.find(p=>positions(p)[0]==='GK');
-    if(!keeper)throw Error('David/vaste keeper is niet beschikbaar');
+    if(!keeper)throw Error('Geen beschikbare keeper: geef minstens één speler positie 1 (GK)');
     const others=available.filter(p=>p.id!==keeper.id&&positions(p)[0]!=='GK');
     if(others.length<10)throw Error('Minder dan elf spelers beschikbaar');
     const week=monday(match.date),avg=others.reduce((n,p)=>n+(p.minutes||0),0)/others.length;
@@ -141,20 +141,24 @@
   }
   function createPlan(state,match,options={}){
     if(!match?.date||!match?.opponent)throw Error('Geen wedstrijd geselecteerd');
-    const available=(state.players||[]).filter(p=>!unavailable(state,match,p));
-    if(available.length<11)throw Error('Minimaal elf beschikbare spelers nodig');
-    const lineup=options.lineup?{...options.lineup}:initialLineup(state,match,available);
+    // Guest players are stored separately and are only available for selected fixtures.
+    const activeIds=new Set((state.matchGuestIds||{})[keyOf(match)]||[]);
+    const guests=(state.guestPlayers||[]).filter(p=>activeIds.has(p.id));
+    const effectiveState={...state,players:[...(state.players||[]),...guests]};
+    const available=effectiveState.players.filter(p=>!unavailable(state,match,p));
+    if(available.length<11)throw Error('Minimaal elf beschikbare spelers nodig (inclusief eventuele gastspelers)');
+    const lineup=options.lineup?{...options.lineup}:initialLineup(effectiveState,match,available);
     const ids=Object.values(lineup),valid=new Set(available.map(p=>p.id));
     if(ids.length!==11||new Set(ids).size!==11||ids.some(id=>!valid.has(id)))throw Error('Basiself bevat geen elf unieke beschikbare spelers');
     if(positions(state.players.find(p=>p.id===lineup.GK))[0]!=='GK')throw Error('Keeper mag niet worden gerouleerd');
-    const rotations=calculateRotations(state,match,lineup,available);
+    const rotations=calculateRotations(effectiveState,match,lineup,available);
     const m=state.match||{},lines=(m.linesmanList||'').split(',').map(x=>x.trim()).filter(Boolean);
     const refs=(m.refereeList||'').split(',').map(x=>x.trim()).filter(Boolean);
     return {
       date:match.date,opponent:match.opponent,lineup,
       ...rotations,
-      linesman:lines.length?lines[(m.linesmanIndex||0)%lines.length]:'Nog toewijzen',
-      referee:match.home==='home'?(refs.length?refs[(m.refereeIndex||0)%refs.length]:'Nog toewijzen'):'Thuisvereniging',
+      linesman:state.teamName==='JO16-2'?'Niet van toepassing':(lines.length?lines[(m.linesmanIndex||0)%lines.length]:'Nog toewijzen'),
+      referee:state.teamName==='JO16-2'?'Niet van toepassing':(match.home==='home'?(refs.length?refs[(m.refereeIndex||0)%refs.length]:'Nog toewijzen'):'Thuisvereniging'),
       created:options.created||new Date().toISOString(),source:options.source||'handmatig'
     };
   }
