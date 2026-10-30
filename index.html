@@ -105,7 +105,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #3f91
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))close()});
  document.getElementById('pinForm').addEventListener('submit',e=>{
    e.preventDefault();if(!chosen)return;
-   if(input.value!=='1111'){error.textContent='Onjuiste code. Probeer opnieuw.';input.value='';input.focus();return}
+   const expected=chosen==='jo16-2'?'2222':'1111';
+   if(input.value!==expected){error.textContent='Onjuiste code. Probeer opnieuw.';input.value='';input.focus();return}
    sessionStorage.setItem('footballforge-access-'+chosen,'1');
    location.assign('./team.html?team='+encodeURIComponent(chosen));
  });
