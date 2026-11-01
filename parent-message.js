@@ -66,33 +66,47 @@
     return bits.join(" · ");
   }
   function makeMessage(state,weather){
-    const m=matchInfo(state),team=String(state?.teamName||'JO16-3');
-    if(!m.date||!m.opponent)return "Selecteer eerst een wedstrijd om de aankondiging te maken.";
-    const home=m.home==="home",opp=String(m.opponent).trim(),of=officials(state);
-    const lines=[
-      "*SV DIEMEN "+team+" | MATCHDAY*",
+    const m=matchInfo(state),team=String(state?.teamName||"JO16-3");
+    if(!m.date||!m.opponent)return "Selecteer eerst een wedstrijd om het WhatsApp-bericht te maken.";
+    const home=m.home==="home",opponent=String(m.opponent).trim(),of=officials(state);
+    const day=new Date(m.date+"T12:00:00").toLocaleDateString("nl-NL",{weekday:"long"});
+    const greeting=["⚽🔥 *MATCHDAY | SV DIEMEN "+team+"* 🔥⚽",
       "",
-      home?"*SV Diemen "+team+" – "+opp+"*":"*"+opp+" – SV Diemen "+team+"*",
-      home?"Thuiswedstrijd":"Uitwedstrijd",
+      "*Daar gaan we weer!* 💙🤍",
+      "Op "+day+" staat er een mooie wedstrijd op het programma. Tijd om samen alles te geven!",
       "",
-      "Datum: "+formatDate(m.date),
-      "Aftrap: "+(m.kickoff||"Nog niet bekend")+" uur",
-      "Verzamelen: "+(m.meeting||"Nog niet bekend")+" uur",
-      "Locatie: "+(m.venue||"Nog niet bekend")
+      "🏟️ *"+(home?"SV Diemen "+team+" – "+opponent:opponent+" – SV Diemen "+team)+"*",
+      home?"🏠 Thuiswedstrijd":"🚌 Uitwedstrijd",
+      "",
+      "📅 *Datum:* "+formatDate(m.date),
+      "⏰ *Verzamelen:* "+(m.meeting||"Nog niet bekend")+" uur",
+      "⚽ *Aftrap:* "+(m.kickoff||"Nog niet bekend")+" uur",
+      "📍 *Locatie:* "+(m.venue||"Nog niet bekend")
     ];
-    if(m.field)lines.push("Veld: "+m.field);
-    if(mapsUrl(m))lines.push("Route via Google Maps:\n"+mapsUrl(m));
-    if(weatherLine(weather))lines.push("\nWeersverwachting: "+weatherLine(weather)+" (bron: Open-Meteo)");
+    if(m.field)greeting.push("🥅 *Veld:* "+m.field);
+    const route=mapsUrl(m);
+    if(route)greeting.push("🗺️ *Route via Google Maps:*",route);
+    const forecast=weatherLine(weather);
+    if(forecast)greeting.push("","🌤️ *Weer:* "+forecast);
     if(team!=="JO16-2"){
-      lines.push("","Grensrechter: "+of.linesman);
-      if(home)lines.push("Scheidsrechter: "+of.referee);
+      const roles=[];
+      if(of.linesman&&of.linesman!=="Nog niet bekend")roles.push("🚩 *Grensrechter:* "+of.linesman);
+      if(home&&of.referee&&of.referee!=="Nog niet bekend")roles.push("🟨 *Scheidsrechter:* "+of.referee);
+      if(roles.length)greeting.push("",...roles);
     }
-    const selectedGuests=new Set((state.matchGuestIds||{})[String(m.date||"")+"|"+String(m.opponent||"")]||[]);
-    const guests=(state.guestPlayers||[]).filter(p=>selectedGuests.has(p.id)&&!p.injured);
-    if(guests.length)lines.push("","Gastspelers: "+guests.map(p=>p.name).join(", "));
-    if(m.parentNote?.trim())lines.push("","\uD83D\uDCCC "+m.parentNote.trim());
-    lines.push("","Zorg dat je op tijd bent, neem je spullen mee en meld onverwachte afwezigheid direct bij de trainers.","","*Tot zaterdag!*\n"+(team==="JO16-3"?"Siam, Melcher & Rob":"De trainers"));
-    return lines.join("\n");
+    const key=String(m.date||"")+"|"+String(m.opponent||"");
+    const guests=new Set((state.matchGuestIds||{})[key]||[]);
+    const selected=(state.guestPlayers||[]).filter(p=>guests.has(p.id)&&!p.injured);
+    if(selected.length)greeting.push("","👥 *Gastspelers:* "+selected.map(p=>p.name).join(", "));
+    if(m.parentNote?.trim())greeting.push("","📣 *Extra informatie:* "+m.parentNote.trim());
+    greeting.push("",
+      "🎒 *Check je tas:* wedstrijdkleding, voetbalschoenen, scheenbeschermers én bidon.",
+      "❗ *Kun je toch niet?* Laat het de trainers zo snel mogelijk weten.",
+      "",
+      "💪 *Samen het veld op, samen ervoor gaan. HUP DIEMEN!* 💙🤍",
+      team==="JO16-3"?"*Siam, Melcher & Rob*":"*De trainers*"
+    );
+    return greeting.join("\n");
   }
   function wrap(ctx,str,maxWidth){
     const words=String(str||"").split(/\s+/),lines=[];let line="";
