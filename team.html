@@ -95,7 +95,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <symbol id="ic-save" viewBox="0 0 24 24"><path d="M4 3h13l3 3v15H4zM8 3v7h8V3M8 21v-8h8v8"/></symbol>
 </svg>
 <div class="shell">
-<header class="topbar"><div class="identity"><a href="./index.html" class="brand-mark" aria-label="Terug naar FootballForge">FootballForge</a><div><strong>Football<span>Forge</span> <span id="teamHeaderTitle"></span></strong><small>SV DIEMEN · SEIZOEN 2026/2027</small></div></div><div class="top-tools"><a href="./index.html" class="btn secondary compact" style="text-decoration:none">← Teams</a><div class="sync-tag" id="headerConnection"><span class="live-dot"></span>TEAMDASHBOARD</div></div></header>
+<header class="topbar"><div class="identity"><a href="./index.html" class="brand-mark" aria-label="Terug naar FootballForge">FootballForge</a><div><strong>Football<span>Forge</span> <span id="teamHeaderTitle"></span></strong><small id="teamStaffInfo">SV DIEMEN · SEIZOEN 2026/2027</small></div></div><div class="top-tools"><a href="./index.html" class="btn secondary compact" style="text-decoration:none">← Teams</a><div class="sync-tag" id="headerConnection"><span class="live-dot"></span>TEAMDASHBOARD</div></div></header>
 <nav class="nav" aria-label="Hoofdnavigatie">
 <a class="clubhouse-navbrand" href="./index.html" aria-label="FootballForge Clubhouse"><img src="./footballforge-mark.svg" alt=""><span><strong>FootballForge</strong><small>Team Management</small></span></a>
 <button data-tab="dashboard" class="active"><svg class="ico"><use href="#ic-home"/></svg>Dashboard</button>
@@ -1173,6 +1173,7 @@ loadShared();
 document.body.dataset.team=TEAM_ID;
 document.getElementById('dashboardOfficialsTitle').textContent=TEAM_ID==='jo16-2'?'Teamstatus':'Officials & teamstatus';
 document.getElementById('teamHeaderTitle').textContent=TEAM_NAME;
+if(TEAM_ID==='jo16-2')document.getElementById('teamStaffInfo').textContent='SV DIEMEN · TRAINERS RENE & JASMIN · 2026/2027';
 document.getElementById('teamSelectionKicker').textContent=TEAM_NAME+' · SELECTIE';
 
 document.getElementById('dashboardTeamLabel').textContent='FOOTBALLFORGE · '+TEAM_NAME;
