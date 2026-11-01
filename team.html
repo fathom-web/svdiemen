@@ -205,7 +205,17 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div class="actions"><button class="btn secondary" onclick="finishMatch()">Wedstrijd afronden & minuten vastleggen</button></div><p class="caption">Speelminuten tellen pas mee wanneer je de wedstrijd afrondt.</p>
 </section>
 </div>
-<section class="module" style="margin-top:17px"><div class="row-title"><h2>Wedstrijdbericht voor ouders</h2><span class="count-pill">WHATSAPP</span></div><div class="parent-grid"><div><div class="row-title"><span class="muted">Kopieerklaar voor WhatsApp</span><span class="count-pill" id="weatherBadge">WEER OPHALEN</span></div><div id="message" class="whatsapp"></div><div class="actions"><button class="btn" onclick="copyMessage()">Kopieer WhatsApp-tekst</button><button class="btn secondary" onclick="copyMapsLink()">Google Maps-route</button></div></div><div><div class="row-title"><span class="muted">Automatische wedstrijdposter</span><span class="count-pill">1080 × 1350 PNG</span></div><canvas id="parentPoster" width="1080" height="1350" aria-label="Wedstrijdposter voor het geselecteerde team"></canvas><div class="crest-upload"><label>SV Diemen logo<input type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadCrest('diemen',event)"></label><label>Tegenstander logo<input type="file" accept="image/png,image/jpeg,image/webp" onchange="uploadCrest('opponent',event)"></label></div><div class="actions"><button class="btn" onclick="copyPoster()">Kopieer afbeelding</button><button class="btn secondary" onclick="downloadPoster()">Download PNG</button></div><p class="caption">De poster bevat logo’s, wedstrijdgegevens, veld, aftrap, verzamelen en (indien beschikbaar) het weer. Google Maps staat als klikbare link in het WhatsApp-bericht. Als een logo ontbreekt, kun je het hier uploaden.</p></div></div></section>
+<section class="module ff-parent-section" style="margin-top:17px">
+<div class="row-title"><div><h2>Wedstrijdbericht voor ouders</h2><p class="muted" style="margin:7px 0 0">Een beetje wedstrijdspanning, alle informatie en meteen klaar voor WhatsApp.</p></div><span class="count-pill">WHATSAPP</span></div>
+<div class="ff-parent-message">
+ <div class="row-title"><span class="muted">Kopieerklaar voor de ouders en spelers</span><span class="count-pill" id="weatherBadge">WEER OPTIONEEL</span></div>
+ <div id="message" class="whatsapp" aria-live="polite"></div>
+ <div class="actions ff-parent-actions">
+  <button class="btn" type="button" onclick="copyMessage()">Kopieer WhatsApp-tekst</button>
+  <button class="btn secondary" type="button" onclick="shareParentWhatsapp()">Open WhatsApp</button>
+  <button class="btn secondary" type="button" onclick="copyMapsLink()">Kopieer Google Maps-route</button>
+ </div>
+</div></section>
 </section>
 <section id="history" class="pane">
 <div class="heading"><div><span class="kicker">TERUGKIJKEN & LEREN</span><h1>Wedstrijdhistorie</h1><p>Speelminuten, gespeelde wedstrijden en betrouwbare back-ups.</p></div></div>
@@ -813,7 +823,6 @@ renderHistory=function(){
 render=function(){renderRoster();renderAttendance();renderFixtures();renderMatchForm();renderStats();renderGenerated();renderHistory()};
 
 
-let parentLogos=[],parentLogoKey='',parentLogoPromise=null;
 let parentWeather=null,parentWeatherKey="",parentWeatherFetched=0,parentWeatherPromise=null;
 function parentKey(){const m=s.match;return [m.date,m.venue,m.home,m.opponent].join('|')}
 function updateParentView(){
@@ -824,8 +833,6 @@ function updateParentView(){
  if(box)box.textContent=JO163Parent.makeMessage(s,applicable);
  const badge=document.getElementById('weatherBadge');
  if(badge)badge.textContent=applicable?'WEER BESCHIKBAAR':'WEER OPTIONEEL';
- const poster=document.getElementById('parentPoster');
- if(poster)JO163Parent.drawPoster(poster,s,applicable,parentLogoKey===current?parentLogos:[]);
 }
 async function refreshWeather(){
  const m=s.match,key=parentKey();
@@ -843,9 +850,7 @@ async function refreshWeather(){
  parentWeatherPromise={key,promise:request};
  await request;
 }
-function refreshParent(){updateParentView();refreshWeather();refreshCrests()}
-async function refreshCrests(){const key=parentKey();if(!s.match?.date)return;if(key===parentLogoKey)return;if(parentLogoPromise?.key===key)return parentLogoPromise.promise;const promise=(async()=>{const loaded=await JO163Logos.drawAssets(s);if(parentKey()===key){parentLogos=loaded;parentLogoKey=key;updateParentView()}})();parentLogoPromise={key,promise};return promise}
-async function uploadCrest(kind,event){const file=event.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/'))return showToast('Gebruik een PNG, JPG of WebP');if(file.size>5000000)return showToast('Afbeelding is te groot');try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});const img=await JO163Logos.getImage(data);if(!img)throw Error('Kan afbeelding niet openen');const cv=document.createElement('canvas');cv.width=280;cv.height=280;const c=cv.getContext('2d');c.clearRect(0,0,280,280);const scale=Math.min(270/img.naturalWidth,270/img.naturalHeight);const w=img.naturalWidth*scale,hh=img.naturalHeight*scale;c.drawImage(img,(280-w)/2,(280-hh)/2,w,hh);const encoded=cv.toDataURL('image/webp',.86);s.clubLogos ||= {};s.clubLogos[kind==='diemen'?'diemen':s.match.opponent]=encoded;save();parentLogoKey='';refreshCrests();renderOverview();renderFixtures();showToast('Clublogo opgeslagen voor alle apparaten')}catch(error){showToast('Clublogo verwerken mislukt')}}
+function refreshParent(){updateParentView();refreshWeather()}
 makeMessage=function(){return JO163Parent.makeMessage(s,parentWeatherKey===parentKey()?parentWeather:null)};
 copyMessage=async function(){
  if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');
@@ -856,27 +861,10 @@ function copyMapsLink(){
  if(!url)return showToast('Voer eerst een sportpark of locatie in');
  navigator.clipboard?.writeText(url).then(()=>showToast('Google Maps-link gekopieerd')).catch(()=>window.open(url,'_blank','noopener,noreferrer'));
 }
-async function posterBlob(){
- const c=document.getElementById('parentPoster');if(!c)throw Error('Geen poster');
- await refreshCrests();
- JO163Parent.drawPoster(c,s,parentWeatherKey===parentKey()?parentWeather:null,parentLogos);
- return new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(Error('Geen afbeelding')),'image/png'));
-}
-function downloadBlob(blob){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download='FootballForge-'+TEAM_NAME+'-matchday-'+(s.match.date||'wedstrijd')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
-async function downloadPoster(){if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');try{downloadBlob(await posterBlob());showToast('Wedstrijdposter gedownload')}catch(e){showToast('PNG maken mislukt')}}
-async function copyPoster(){
- if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');
- try{
-  const blob=await posterBlob();
-  if(navigator.clipboard?.write&&typeof ClipboardItem!=='undefined'){
-    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-    showToast('Poster gekopieerd · plak in WhatsApp');
-  }else if(navigator.share&&navigator.canShare){
-    const file=new File([blob],'FootballForge-'+TEAM_NAME+'-matchday.png',{type:'image/png'});
-    if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:TEAM_NAME+' wedstrijd'});return}
-    downloadBlob(blob);showToast('Afbeelding gedownload');
-  }else{downloadBlob(blob);showToast('Kopiëren niet ondersteund; afbeelding gedownload')}
- }catch(e){showToast('Afbeelding kopiëren lukte niet. Probeer Download PNG.')}
+function shareParentWhatsapp(){
+ if(!s.match?.date||!s.match?.opponent)return showToast('Selecteer eerst een wedstrijd');
+ const url='https://wa.me/?text='+encodeURIComponent(makeMessage());
+ window.open(url,'_blank','noopener,noreferrer');
 }
 
 // Shared lineup algorithm, also used by the scheduled Friday generator.
