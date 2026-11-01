@@ -80,7 +80,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 .ff-match-details{margin-top:17px}
 @media(max-width:900px){.ff-phase-grid{grid-template-columns:1fr}.ff-phase-card{max-width:650px;width:100%;margin:0 auto}}
 @media(max-width:480px){.ff-phase-grid{gap:14px}.ff-phase-card{padding:12px;border-radius:15px}.ff-phase-heading{gap:9px}.ff-phase-title h3{font-size:15px}.ff-phase-pitch{min-height:335px;padding:13px 6px}.ff-phase-pitch .pitch-player{max-width:73px}.ff-phase-pitch .shirt{width:29px;height:32px;font-size:12px}.ff-phase-pitch .player-label{font-size:9px}.ff-phase-swap{font-size:11px;gap:3px}}
-.ff-export-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ff-pdf-btn{background:linear-gradient(112deg,#217ee5,#1656b3);border:1px solid #57a3ff;color:white;font-weight:850;box-shadow:0 7px 20px #0003}.ff-pdf-btn:disabled{opacity:.6;cursor:progress}.ff-phases-module>.row-title{align-items:center}@media(max-width:660px){.ff-export-actions{width:100%}.ff-export-actions .ff-pdf-btn{width:100%;justify-content:center}.ff-phases-module>.row-title{align-items:stretch;flex-direction:column}} </style><link rel="stylesheet" href="./clubhouse.css?v=1"><link rel="icon" type="image/svg+xml" href="./footballforge-mark.svg"></head><body>
+.ff-export-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ff-pdf-btn{background:linear-gradient(112deg,#217ee5,#1656b3);border:1px solid #57a3ff;color:white;font-weight:850;box-shadow:0 7px 20px #0003}.ff-pdf-btn:disabled{opacity:.6;cursor:progress}.ff-phases-module>.row-title{align-items:center}@media(max-width:660px){.ff-export-actions{width:100%}.ff-export-actions .ff-pdf-btn{width:100%;justify-content:center}.ff-phases-module>.row-title{align-items:stretch;flex-direction:column}} </style><link rel="stylesheet" href="./clubhouse.css?v=20261101"><link rel="icon" type="image/svg+xml" href="./footballforge-mark.svg"></head><body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
 <symbol id="ic-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10h-7v-7h-4v7H3z"/></symbol>
 <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3zM17 5a3 3 0 0 1 0 6m0 3a5 5 0 0 1 4 5"/></symbol>
@@ -227,7 +227,7 @@ footer{color:#6386b6;font-size:11px;text-align:center;padding:30px 0}.caption{fo
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div>
 <script src="./club-logos.js"></script>
-<script src="./parent-message.js"></script>
+<script src="./parent-message.js?v=20261101"></script>
 <script src="./jo16-2-recovery.js"></script>
 <script src="./lineup-engine.js"></script>
 <script src="./matchday-pdf.js"></script>
@@ -856,10 +856,17 @@ copyMessage=async function(){
  if(!s.match?.date)return showToast('Selecteer eerst een wedstrijd');
  try{await navigator.clipboard.writeText(makeMessage());showToast('WhatsApp-bericht gekopieerd');}catch(error){showToast('Kopiëren niet mogelijk: selecteer het bericht handmatig')}
 };
-function copyMapsLink(){
+async function copyMapsLink(){
  const url=JO163Parent.mapsUrl(s.match);
  if(!url)return showToast('Voer eerst een sportpark of locatie in');
- navigator.clipboard?.writeText(url).then(()=>showToast('Google Maps-link gekopieerd')).catch(()=>window.open(url,'_blank','noopener,noreferrer'));
+ try{
+  if(!navigator.clipboard?.writeText)throw Error('Klembord niet beschikbaar');
+  await navigator.clipboard.writeText(url);
+  showToast('Google Maps-link gekopieerd');
+ }catch{
+  window.open(url,'_blank','noopener,noreferrer');
+  showToast('Route geopend in Google Maps');
+ }
 }
 function shareParentWhatsapp(){
  if(!s.match?.date||!s.match?.opponent)return showToast('Selecteer eerst een wedstrijd');
