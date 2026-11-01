@@ -104,7 +104,7 @@
       "❗ *Kun je toch niet?* Laat het de trainers zo snel mogelijk weten.",
       "",
       "💪 *Samen het veld op, samen ervoor gaan. HUP DIEMEN!* 💙🤍",
-      team==="JO16-3"?"*Siam, Melcher & Rob*":"*De trainers*"
+      team==="JO16-3"?"*Siam, Melcher & Rob*":team==="JO16-2"?"*Rene & Jasmin*":"*De trainers*"
     );
     return greeting.join("\n");
   }
@@ -196,7 +196,7 @@
       ctx.fillText("Google Maps-route staat in het WhatsApp-bericht",540,1281);
     }
     ctx.fillStyle="#90b8e8";ctx.font="800 20px system-ui,sans-serif";
-    ctx.fillText(team==="JO16-3"?"SIAM  ·  MELCHER  ·  ROB    /    SV DIEMEN "+team:"FOOTBALLFORGE    /    SV DIEMEN "+team,540,1337);
+    ctx.fillText(team==="JO16-3"?"SIAM  ·  MELCHER  ·  ROB    /    SV DIEMEN "+team:team==="JO16-2"?"RENE  ·  JASMIN    /    SV DIEMEN "+team:"FOOTBALLFORGE    /    SV DIEMEN "+team,540,1337);
     ctx.textAlign="start";
     return canvas;
   }
