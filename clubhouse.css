@@ -248,3 +248,22 @@ body[data-team="jo16-2"] .grid4{grid-template-columns:repeat(5,minmax(0,1fr))}
  #training .ff-three-trainings .ff-att-switch button{width:100%;min-width:0;padding:8px 3px;font-size:10px}
  #training .ff-three-trainings .att-day small{font-size:9px;letter-spacing:0}
 }
+
+/* Parent announcements: football energy, one focused WhatsApp-ready message. */
+.ff-parent-section{padding:23px 26px}
+.ff-parent-message{max-width:1040px;margin-top:18px}
+.ff-parent-message>.row-title{margin-bottom:13px;flex-wrap:wrap;gap:8px}
+.ff-parent-message .whatsapp{
+ background:#f4f8ef!important;color:#274634!important;
+ border:1px solid #d5e5d1!important;border-left:5px solid #2d8355!important;
+ border-radius:14px;padding:24px 28px;font-size:15px;line-height:1.75;
+ min-height:0;white-space:pre-wrap;overflow-wrap:anywhere;
+ box-shadow:0 8px 23px #2448300b;
+}
+.ff-parent-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.ff-parent-actions .btn{min-height:43px}
+@media(max-width:650px){
+ .ff-parent-section{padding:15px}
+ .ff-parent-message .whatsapp{padding:18px 15px;font-size:14px;line-height:1.7}
+ .ff-parent-actions .btn{width:100%;justify-content:center}
+}
