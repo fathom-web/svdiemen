@@ -42,10 +42,10 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - **Download PDF · 4 pagina’s** op het wedstrijdscherm: één A4-pagina per veldopstelling met alle bijbehorende UIT → IN-wissels, datum, tegenstander en verzameltijd. Geen externe PDF-service.
 - Bij elk wisselmoment staan de namen van de uitgaande en inkomende spelers inclusief posities; de bestaande wisseltijdlijn blijft staan
 - Bij handmatig verwisselen van basisspelers worden de drie volgende veldplaatjes en de wisselteksten opnieuw berekend
-- Scheidsrechter- en grensrechterrotatie voor JO16-3 en JO14-3; **niet voor JO16-2** (ook verborgen in oudersbericht, poster, historie en het dashboard).
+- Scheidsrechter- en grensrechterrotatie voor JO16-3 en JO14-3; **niet voor JO16-2** (ook verborgen in oudersbericht, historie en het dashboard).
 - Officials en speelminuten
 - WhatsApp-ouderbericht met Google Maps-route
-- Downloadbare PNG-wedstrijdposter met logo's, weer, veld en officials
+- Direct deelbaar WhatsApp-ouderbericht met een enthousiastere wedstrijdintro, route, verzameltijd en praktische instructies; geen losse PNG-poster
 - Import/export als JSON
 
 ## Bestanden
@@ -55,7 +55,7 @@ Elke 30 seconden worden teamgegevens opnieuw geladen als er niet wordt getypt of
 - `team.html`: teamdashboard, Supabase-synchronisatie
 - `lineup-engine.js`: opstellingen en wissels
 - `matchday-pdf.js`: lokale PDF-export van vier opstellingen en wisselregels
-- `parent-message.js`: wedstrijdberichten en posters
+- `parent-message.js`: WhatsApp-ouderberichten, Google Maps en optionele weersinformatie
 - `club-logos.js`: clublogo's
 - `supabase-setup.sql`: oorspronkelijke databaseaanmaak
 - `scripts/friday-lineup.cjs`: automatische vrijdagopstelling voor JO16-3
@@ -100,3 +100,6 @@ FootballForge heeft een eenmalige herstelset in `jo16-2-recovery.js` met **16 zi
 De eerste keer dat JO16-2 wordt geopend na publicatie, vult de app de ontbrekende gegevens automatisch aan via de bestaande Supabase-rij met compare-and-swap. De andere teams blijven ongewijzigd. Testgevallen met een volledig lege cloud en met al bestaande spelers/wedstrijden zijn doorlopen. De daadwerkelijke productie-run moet nog worden bevestigd via het dashboard.
 
 **Privacy:** de huidige GitHub Pages- en Supabase-testopzet heeft geen echte gebruikersauthenticatie. De publieke herstelset bevat namen van jeugdspelers; verplaats de spelersgegevens naar een beveiligde gegevensbron en stel Supabase Auth + teamgebonden RLS in voordat de website buiten de trainersgroep wordt gebruikt.
+
+## Ouderberichten (1 november 2026)
+De ongebruikte PNG-wedstrijdposter en logo-uploadvelden zijn uit het wedstrijdscherm verwijderd. Het bericht staat nu over de volledige breedte met knoppen voor **Kopieer WhatsApp-tekst**, **Open WhatsApp** en **Kopieer Google Maps-route**. De tekst heeft een energieke wedstrijdintro, wedstrijdgegevens, eventueel weer en officials, gastspelers, extra instructies, een tas-check en een afsluitende aanmoediging. De **vierpagina-PDF met de opstellingen en wissels blijft ongewijzigd**.
